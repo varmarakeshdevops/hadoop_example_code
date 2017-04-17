@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/hadoop"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:cascading="http://www.springframework.org/schema/cascading"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/cascading http://www.springframework.org/schema/cascading/spring-cascading.xsd
+	http://www.springframework.org/schema/hadoop http://www.springframework.org/schema/hadoop/spring-hadoop.xsd">
+
+	<!-- by default, the definition name is 'hiveClientFactory' -->
+<!-- <hive-client-factory id="hiveClientFactory" />
+	<beans:bean id="hiveDriver" class="org.apache.hive.jdbc.HiveDriver"/>
+	<beans:bean id="hiveDataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
+	  <beans:constructor-arg name="driver" ref="hiveDriver"/>
+	  <beans:constructor-arg name="url" value="jdbc:hive2://localhost:10000"/>
+	</beans:bean> -->
+
+	<!-- Hive template wires automatically to 'hiveClientFactory'-->
+	<!-- <hive-template /> -->
+	
+	<!-- wire hive template into a bean
+	<beans:bean id="hiveWordRepository" class="com.giantelectronicbrain.hadoop.hive.WordRepository">
+	</beans:bean>  -->
+
+	<!-- configuration to build a TEZ job using Cascading Spring support -->
+<!-- 	<beans:bean id='flowDef' class='com.giantelectronicbrain.hadoop.cascading.tez.TezFlow' factory-method='createFlowDef' />
+	<cascading:cascading-flow id='wc' definition-ref='flowDef' />
+	<cascading:cascading-cascade id='cascade' flow-ref='wc' />
+	<cascading:cascading-runner unit-of-work-ref='cascade' run-at-startup='false'/> -->
+	
+	<!-- This is the basic hadoop and hbase MR configuration stuff -->
+	<context:component-scan base-package="com.giantelectronicbrain.hadoop.hbase"/>
+	
+	<context:property-placeholder location="hadoop.properties"/>
+
+	<hbase-configuration delete-connection="false"/>
+	
+	<beans:bean id='htemplate' class='org.springframework.data.hadoop.hbase.HbaseTemplate'>
+		<beans:property name='configuration' ref='hbaseConfiguration'/>
+	</beans:bean>
+	
+	<configuration>
+	  fs.defaultFS=${hd.fs}
+	  yarn.resourcemanager.address=${hd.rm}
+	  mapreduce.framework.name=yarn
+	  mapreduce.jobhistory.address=${hd.jh}
+	</configuration>
+
+ 	<job id="wordcountJob"
+	     input-path="${wordcount.input.path}" 
+	     output-path="${wordcount.output.path}"
+         libs="file:///home/oracle/Documents/workspace-sts-3.8.3.RELEASE/mapreduce-test/build/lib/*"
+	     jar="file:///home/oracle/Documents/workspace-sts-3.8.3.RELEASE/mapreduce-test/build/libs/mapreduce-test.jar"
+		 mapper="com.giantelectronicbrain.hadoop.mapreduce.HdfsFileMapper"
+		 reducer="com.giantelectronicbrain.hadoop.mapreduce.HdfsFileReducer"/>
+		 
+	<job id="hbaseWordcountJob"
+	     input-path="${wordcount.input.path}" 
+	     output-path="${extra.output.path}"
+	     libs="file:///home/oracle/Documents/workspace-sts-3.8.3.RELEASE/mapreduce-test/build/lib/*"
+	     jar="file:///home/oracle/Documents/workspace-sts-3.8.3.RELEASE/mapreduce-test/build/libs/mapreduce-test.jar"
+		 mapper="com.giantelectronicbrain.hadoop.mapreduce.HdfsFileMapper"
+		 reducer="com.giantelectronicbrain.hadoop.hbase.HBaseWordReducer"/>
+		 
+	<script id="setupScript" location="copy-files.groovy">
+		<property name="localSourceFile" value="${localSourceFile}"/>
+		<property name="inputDir" value="${wordcount.input.path}"/>
+		<property name="outputDir" value="${wordcount.output.path}"/>
+		<property name="extraDir" value="${extra.output.path}"/>
+	</script>
+ 
+ 	<pig-factory exec-type='MAPREDUCE'/> 	
+ 	<pig-runner id='pigRunner'>
+ 		<script location="wordcount.pig">
+ 			<arguments>
+ 				inputfile=${piginput}
+ 				outputfile=${pigoutput}
+ 			</arguments>
+ 		</script>
+ 	</pig-runner>
+ 	
+	<job-runner id="runner" run-at-startup="false"
+	    	    pre-action="setupScript"
+			    job-ref="wordcountJob" />
+			    
+	<job-runner id="hbaseRunner" run-at-startup="false"
+			    job-ref="hbaseWordcountJob" />	  
+
+	
+</beans:beans>
