@@ -3,7 +3,7 @@
  */
 package com.tradedesksoftware.hadoop.cascading.tez;
 
-import cascading.flow.FlowDef;
+/* import cascading.flow.FlowDef;
 import cascading.operation.aggregator.Count;
 import cascading.operation.regex.RegexSplitGenerator;
 import cascading.pipe.Each;
@@ -13,7 +13,7 @@ import cascading.pipe.Pipe;
 import cascading.scheme.hadoop.TextDelimited;
 import cascading.tap.Tap;
 import cascading.tap.hadoop.Hfs;
-import cascading.tuple.Fields;
+import cascading.tuple.Fields; */
 
 /**
  * @author tharter
@@ -21,7 +21,7 @@ import cascading.tuple.Fields;
  */
 public class TezFlow {
 	//NOTE: need to figure out how to parameterize these, should be args to createFlowDef()
-	private static final String DOCPATH = "/user/oracle/build/input";
+/*	private static final String DOCPATH = "/user/oracle/build/input";
 	private static final String OUTPATH = "/user/oracle/build/output";
 	
 	public static FlowDef createFlowDef() {
@@ -40,5 +40,5 @@ public class TezFlow {
 
 		FlowDef flowDef = FlowDef.flowDef().setName("wc").addSource(docPipe, inputTap).addTailSink(wcPipe, outputTap);
 		return flowDef;
-	}
+	} */
 }

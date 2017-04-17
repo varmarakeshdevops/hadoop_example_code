@@ -51,16 +51,16 @@
  	<job id="wordcountJob"
 	     input-path="${wordcount.input.path}" 
 	     output-path="${wordcount.output.path}"
-         libs="file:///home/oracle/Documents/workspace-sts-3.8.3.RELEASE/mapreduce-test/build/lib/*"
-	     jar="file:///home/oracle/Documents/workspace-sts-3.8.3.RELEASE/mapreduce-test/build/libs/mapreduce-test.jar"
+         libs="file:///home/oracle/git/AIMS_infosys_code_share/hadoop_example_code/mapreduce-test/build/lib/*"
+	     jar="file:///home/oracle/git/AIMS_infosys_code_share/hadoop_example_code/mapreduce-test/build/libs/mapreduce-test.jar"
 		 mapper="com.giantelectronicbrain.hadoop.mapreduce.HdfsFileMapper"
 		 reducer="com.giantelectronicbrain.hadoop.mapreduce.HdfsFileReducer"/>
 		 
 	<job id="hbaseWordcountJob"
 	     input-path="${wordcount.input.path}" 
 	     output-path="${extra.output.path}"
-	     libs="file:///home/oracle/Documents/workspace-sts-3.8.3.RELEASE/mapreduce-test/build/lib/*"
-	     jar="file:///home/oracle/Documents/workspace-sts-3.8.3.RELEASE/mapreduce-test/build/libs/mapreduce-test.jar"
+	     libs="file:///home/oracle/git/AIMS_infosys_code_share/hadoop_example_code/mapreduce-test/build/lib/*"
+	     jar="file:///home/oracle/git/AIMS_infosys_code_share/hadoop_example_code/mapreduce-test/build/libs/mapreduce-test.jar"
 		 mapper="com.giantelectronicbrain.hadoop.mapreduce.HdfsFileMapper"
 		 reducer="com.giantelectronicbrain.hadoop.hbase.HBaseWordReducer"/>
 		 
