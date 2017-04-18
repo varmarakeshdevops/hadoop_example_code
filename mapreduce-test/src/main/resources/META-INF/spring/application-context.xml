@@ -26,9 +26,10 @@
 
 	<!-- configuration to build a TEZ job using Cascading Spring support -->
 <!-- 	<beans:bean id='flowDef' class='com.giantelectronicbrain.hadoop.cascading.tez.TezFlow' factory-method='createFlowDef' />
-	<cascading:cascading-flow id='wc' definition-ref='flowDef' />
+ 	<cascading:cascading-flow id='wc' definition-ref='flowDef' />
 	<cascading:cascading-cascade id='cascade' flow-ref='wc' />
 	<cascading:cascading-runner unit-of-work-ref='cascade' run-at-startup='false'/> -->
+	
 	
 	<!-- This is the basic hadoop and hbase MR configuration stuff -->
 	<context:component-scan base-package="com.giantelectronicbrain.hadoop.hbase"/>

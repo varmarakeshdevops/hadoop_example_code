@@ -9,6 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.data.hadoop.cascading.CascadingRunner;
 import org.springframework.data.hadoop.mapreduce.JobRunner;
 import org.springframework.data.hadoop.pig.PigRunner;
 
@@ -66,6 +67,10 @@ public class Driver {
 		LOG.info("Going to try to run a PIG script defined by Spring");
 		PigRunner pigRunner = (PigRunner) context.getBean("pigRunner");
 		pigRunner.call();
+		
+//		LOG.info("Execute Cascading Tez job");
+//		CascadingRunner cRunner = (CascadingRunner) context.getBean("cascade");
+//		cRunner.call();
 	}
 
 }
