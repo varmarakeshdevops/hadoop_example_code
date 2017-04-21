@@ -35,20 +35,62 @@ import com.giantelectronicbrain.hadoop.Word;
 @org.springframework.stereotype.Repository
 public class WordRepository {
 	private static final Log LOG = LogFactory.getLog(WordRepository.class);
-	private static final String DEFAULT_HIVE_SERVER_LOCATION = "localhost";
-	private static final int DEFAULT_HIVE_SERVER_PORT = 10000;
-	private static final int DEFAULT_HIVE_TIMEOUT = 10000;
+	/**
+	 * Default URL for Hive thrift connection.
+	 */
+	public static final String DEFAULT_HIVE_SERVER_LOCATION = "localhost";
+	/**
+	 * Default port for Hive thrift connection.
+	 */
+	public static final int DEFAULT_HIVE_SERVER_PORT = 10000;
+	/**
+	 * Default 10 second timeout for thrift network operations.
+	 */
+	public static final int DEFAULT_HIVE_TIMEOUT = 10000;
 
 	private String tableName = "words";
+	
+	/**
+	 * Get the name of the Hive table.
+	 * 
+	 * @return String hive table name
+	 */
+	public String getTableName() {
+		return tableName;
+	}
+
+	/**
+	 * Set the name of the Hive table. Set this before you make queries.
+	 * 
+	 * @param tableName table name to use
+	 */
+	public void setTableName(String tableName) {
+		this.tableName = tableName;
+	}
+
 	private TCLIService.Client client;
 	private TSessionHandle sessHandle;
 	private TSocket transport;
 
+	/**
+	 * Construct a repository using defaults.
+	 * 
+	 * @throws TException if a connection cannot be established.
+	 */
 	public WordRepository() throws TException {
 		this(DEFAULT_HIVE_SERVER_LOCATION,DEFAULT_HIVE_SERVER_PORT,DEFAULT_HIVE_TIMEOUT);
 	}
-		
+	
+	/**
+	 * Create a repository which connects to the given host and port with the given timeout.
+	 * 
+	 * @param hiveServerLocation host name to make thrift connection to.
+	 * @param hiveServerPort port number to make thrift connection to.
+	 * @param timeout thrift timeout.
+	 * @throws TException if a connection cannot be established.
+	 */
 	public WordRepository(String hiveServerLocation,int hiveServerPort, int timeout) throws TException {
+		LOG.debug("Creating thrift connection to "+hiveServerLocation+":"+hiveServerPort);
     	transport = new TSocket(hiveServerLocation, hiveServerPort);
     	transport.setTimeout(timeout);
     	
@@ -60,10 +102,21 @@ public class WordRepository {
     	sessHandle = openResp.getSessionHandle();
 	}
 	
+	/**
+	 * Close the thrift connection. This should be used to clean up resources.
+	 */
 	public void close() {
     	transport.close();
 	}
 	
+	/**
+	 * Find all the words in the Hive table and return them all as a List. <b>Note:</b> this really
+	 * won't scale well.
+	 * 
+	 * @return List&lt;String&gt; return records as a list in TSV form.
+	 * 
+	 * @throws TException if the query fails.
+	 */
 	public List<String> findAll() throws TException {
 		TExecuteStatementReq execReq = new TExecuteStatementReq(sessHandle, "SELECT * FROM "+tableName);
     	TExecuteStatementResp execResp = client.ExecuteStatement(execReq);
@@ -86,6 +139,11 @@ public class WordRepository {
     	return results;
 	}
 
+	/**
+	 * Make sure that the table exists, create it if it doesn't.
+	 * 
+	 * @throws TException if the table cannot be created or there is some other Hive error.
+	 */
 	public void initTable() throws TException {
     	TOperationHandle stmtHandle = null;
 		try {
@@ -103,10 +161,22 @@ public class WordRepository {
 	    }
 	}
 	
+	/**
+	 * Save a word into the Hive table.
+	 * 
+	 * @param word Word to save.
+	 * @return Word the saved word.
+	 * @throws TException if the insert fails.
+	 */
 	public Word save(Word word) throws TException {
 		return save(word.getWord(),word.getCount());
 	}
 	
+	/**
+	 * Delete the Hive table if it exists.
+	 * 
+	 * @throws TException if the table cannot be dropped.
+	 */
 	public void deleteTable() throws TException {
 		TExecuteStatementReq execReq = new TExecuteStatementReq(sessHandle, "DROP TABLE IF EXISTS "+tableName);
     	TExecuteStatementResp execResp = client.ExecuteStatement(execReq);
@@ -120,6 +190,12 @@ public class WordRepository {
     	client.CloseOperation(closeReq);
 	}
 	
+	/**
+	 * Return true if the table exists, false otherwise.
+	 * 
+	 * @return boolean true, the table exists, false it doesn't exist.
+	 * @throws TException if the query can't be executed.
+	 */
 	public boolean tableExists() throws TException {
 		TOperationHandle stmtHandle = null;
 		try {
@@ -136,6 +212,7 @@ public class WordRepository {
 	
 	       	TFetchResultsReq fetchReq = new TFetchResultsReq(stmtHandle, TFetchOrientation.FETCH_FIRST, 1);
 	    	TFetchResultsResp resultsResp = client.FetchResults(fetchReq);
+	    	LOG.debug("Result response for table existence query was "+resultsResp);
 		} finally {
 			if(stmtHandle != null) {
 		    	TCloseOperationReq closeReq = new TCloseOperationReq();
@@ -150,7 +227,7 @@ public class WordRepository {
 	 * Delete a row with the given word as key.
 	 * 
 	 * @param key word to delete
-	 * @throws TException 
+	 * @throws TException if deletion fails
 	 */
 	public void deleteRow(String key) throws TException {
 		TExecuteStatementReq execReq = new TExecuteStatementReq(sessHandle, "DELETE FROM "+tableName+" WHERE word = "+key);
@@ -165,6 +242,11 @@ public class WordRepository {
     	client.CloseOperation(closeReq);
 	}
 
+	/**
+	 * Delete all words from the table.
+	 * 
+	 * @throws TException if the query fails.
+	 */
 	public void clearTable() throws TException {
 		TExecuteStatementReq execReq = new TExecuteStatementReq(sessHandle, "DELETE FROM "+tableName);
     	TExecuteStatementResp execResp = client.ExecuteStatement(execReq);
@@ -178,6 +260,14 @@ public class WordRepository {
     	client.CloseOperation(closeReq);
 	}
 	
+	/**
+	 * Save a word and its associated count.
+	 * 
+	 * @param word the word
+	 * @param count the count, this should be a valid int
+	 * @return a Word object containing the saved data.
+	 * @throws TException if the insert fails.
+	 */
 	public Word save(final String word, final String count) throws TException {
     	TOperationHandle stmtHandle = null;
 		Word w = new Word(word,count);

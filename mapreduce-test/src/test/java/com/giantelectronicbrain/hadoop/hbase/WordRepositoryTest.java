@@ -37,7 +37,7 @@ public class WordRepositoryTest {
 		uut.clearTable(); // insure known table state
 	}
 	
-	/*
+	/**
 	 * Test method for {@link com.giantelectronicbrain.hadoop.hbase.WordRepository#clearTable()}.
 	 */
 	@Test

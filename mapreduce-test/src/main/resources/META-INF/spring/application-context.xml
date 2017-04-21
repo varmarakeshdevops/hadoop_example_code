@@ -24,11 +24,12 @@
 	<beans:bean id="hiveWordRepository" class="com.giantelectronicbrain.hadoop.hive.WordRepository">
 	</beans:bean>  -->
 
-	<!-- configuration to build a TEZ job using Cascading Spring support -->
-<!-- 	<beans:bean id='flowDef' class='com.giantelectronicbrain.hadoop.cascading.tez.TezFlow' factory-method='createFlowDef' />
+	<!-- configuration to build a TEZ job using Cascading Spring support
+	Looks like Cascading Spring doesn't support hadoop 2.x! Will have to take a different approach -->
+<!-- <beans:bean id='flowDef' class='com.giantelectronicbrain.hadoop.cascading.tez.TezFlow' factory-method='createFlowDef' />
  	<cascading:cascading-flow id='wc' definition-ref='flowDef' />
 	<cascading:cascading-cascade id='cascade' flow-ref='wc' />
-	<cascading:cascading-runner unit-of-work-ref='cascade' run-at-startup='false'/> -->
+	<cascading:cascading-runner unit-of-work-ref='cascade' run-at-startup='false'/>  -->
 	
 	
 	<!-- This is the basic hadoop and hbase MR configuration stuff -->

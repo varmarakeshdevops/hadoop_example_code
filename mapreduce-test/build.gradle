@@ -14,9 +14,15 @@ plugins {
 apply plugin: 'java-library'
 apply plugin: 'com.github.johnrengelman.shadow'
 
+javadoc {
+ options.addStringOption('overview','src/main/java/com/giantelectronicbrain/hadoop/overview.html')
+}
+
 configurations.all {
 //Needed with older Hadoop to force older versions of guava, otherwise things blow up.
   resolutionStrategy.force 'com.google.guava:guava:15.0'
+//Not sure why this is needed...
+  resolutionStrategy.force 'org.htrace:htrace-core:3.0.3'
 }
 
 // In this section you declare where to find the dependencies of your project
@@ -61,6 +67,20 @@ dependencies {
 	compile 'org.antlr:antlr-runtime:3.4'
 	compile 'cascading:cascading-core:3.+'
 	compile 'cascading:cascading-hadoop2-tez:3.+'
+	compile 'cascading:cascading-local:3.+'
+	compile 'org.apache.tez:tez-api:0.8.+'
+	compile 'org.apache.tez:tez-mapreduce:0.8.+'
+	compile 'org.apache.tez:tez-common:0.8.+'
+	compile 'org.apache.tez:tez-runtime-library:0.8.+'
+	compile 'org.apache.tez:tez-runtime-internals:0.8.+'
+	compile 'org.apache.tez:hadoop-shim:0.8.+'
+	compile 'org.apache.tez:hadoop-shim-2.6:0.8.+'
+	compile 'org.apache.tez:hadoop-shim-impls:0.8.+'	
+//	compile 'org.apache.tez:tez-job-analyzer:0.8.+'
+	compile 'org.apache.tez:tez-dag:0.8.+'
+	compile 'org.apache.commons:commons-collections4:4.+'
+//	compile 'org.apache.hadoop:hadoop-common:2.6.0'
+//	compile 'org.htrace:htrace-core:3.0.4'
 	compile 'org.springframework.data:spring-cascading:2.0.0.M5-cdh5'
 
     // Use JUnit test framework

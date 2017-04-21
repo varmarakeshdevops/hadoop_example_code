@@ -19,7 +19,10 @@ import org.apache.hadoop.mapreduce.Reducer;
  */
 public class HdfsFileReducer  extends Reducer<Text, IntWritable, Text, IntWritable> {
 
-	
+	/*
+	 * (non-Javadoc)
+	 * @see org.apache.hadoop.mapreduce.Reducer#reduce(KEYIN, java.lang.Iterable, org.apache.hadoop.mapreduce.Reducer.Context)
+	 */
 	@Override
 	protected void reduce(Text key, Iterable<IntWritable> values,
 			Reducer<Text, IntWritable, Text, IntWritable>.Context context) throws IOException, InterruptedException {

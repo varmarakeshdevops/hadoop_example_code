@@ -26,14 +26,14 @@ public class HBaseWordReducer extends Reducer<Text, IntWritable, Text, IntWritab
 	private WordRepository wordRepository;
 	
 	/**
-	 * Note how we must manually instantiate our own Spring context and inject beans by hand in
+	 * <b>Note:</b> We must manually instantiate our own Spring context and inject beans by hand in
 	 * this Reducer. This is also the case for Mappers, both are instantiated by Hadoop framework
-	 * mechanisms that are outside of the Spring world. Thus you CANNOT USE SPRING ANNOTATIONS etc
+	 * mechanisms that are outside of the Spring world. Thus you <em>cannot use Spring annotations</em> etc
 	 * within MapReduce code!
 	 */
 	public HBaseWordReducer() {
 		super();
-		context = new ClassPathXmlApplicationContext("/META-INF/spring/application-context.xml",HBaseOutput.class);
+		context = new ClassPathXmlApplicationContext("/META-INF/spring/application-context.xml",Driver.class);
 		wordRepository = context.getBean(WordRepository.class);
 	}
 	

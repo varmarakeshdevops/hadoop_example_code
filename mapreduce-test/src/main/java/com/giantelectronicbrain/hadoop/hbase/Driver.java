@@ -12,7 +12,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.data.hadoop.mapreduce.JobRunner;
 
 import com.giantelectronicbrain.hadoop.Word;
-import com.giantelectronicbrain.hadoop.mapreduce.Driver;
 
 /**
  * Driver which runs just the hbase mapping part of the task. This also dumps out a view of the resulting
@@ -21,21 +20,18 @@ import com.giantelectronicbrain.hadoop.mapreduce.Driver;
  * @author tharter
  *
  */
-public class HBaseOutput {
+public class Driver {
 	private static final Log LOG = LogFactory.getLog(Driver.class);
 	private static AbstractApplicationContext context;
 
 	/**
-	 * Interestingly you CAN use Spring within the Job Runner, because that is a whole standalone application that is
-	 * launched once by Hadoop to manage actual submission of various jobs. It can also do 'stuff' itself, although it is
-	 * not advisable to do any data processing here, since this is just one single task. In any case, you can inject stuff
-	 * here etc.
+	 * Driver which sinks word counts into an HBase table.
 	 * 
-	 * @param args
+	 * @param args unused
 	 */
 	public static void main(String[] args) {
 		try {
-		    context = new ClassPathXmlApplicationContext("/META-INF/spring/application-context.xml",HBaseOutput.class);
+		    context = new ClassPathXmlApplicationContext("/META-INF/spring/application-context.xml",Driver.class);
 		    
 		    WordRepository wordRepository = context.getBean(WordRepository.class);
 		    wordRepository.initTable();

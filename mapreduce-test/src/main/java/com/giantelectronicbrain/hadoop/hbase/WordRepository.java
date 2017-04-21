@@ -34,6 +34,24 @@ public class WordRepository {
 
 	private String tableName = "words";
 
+	/**
+	 * Get the name of the HBase table being used.
+	 * 
+	 * @return String table name.
+	 */
+	public String getTableName() {
+		return tableName;
+	}
+
+	/**
+	 * Set the name of the HBase table being used.
+	 * 
+	 * @param tableName String table name.
+	 */
+	public void setTableName(String tableName) {
+		this.tableName = tableName;
+	}
+
 	private static byte[] CF_INFO = Bytes.toBytes("cfInfo");
 	private static byte[] qCount = Bytes.toBytes("count");
 	private static byte[] qWord = Bytes.toBytes("word");
@@ -41,7 +59,7 @@ public class WordRepository {
 	/**
 	 * Return a dump of the whole table. This obviously will NOT scale! It is just useful for tests.
 	 * 
-	 * @return List<Word>
+	 * @return List&lt;Word&gt; all the words in the table.
 	 */
 	public List<Word> findAll() {
 		return hbaseTemplate.find(tableName, "cfInfo", new RowMapper<Word>() {
@@ -68,7 +86,7 @@ public class WordRepository {
 	 * Returns true if the words table exists.
 	 * 
 	 * @return boolean true if table exists
-	 * @throws IOException
+	 * @throws IOException if something goes wrong with the query.
 	 */
 	public boolean tableExists() throws IOException {
 		return getHBaseAdmin().tableExists(tableName);
@@ -77,7 +95,7 @@ public class WordRepository {
 	/**
 	 * Delete the words table if it exists.
 	 * 
-	 * @throws IOException
+	 * @throws IOException if the table cannot be deleted.
 	 */
 	public void deleteTable() throws IOException {
 		HBaseAdmin admin = getHBaseAdmin();
@@ -112,7 +130,7 @@ public class WordRepository {
 	/**
 	 * Create the words table if it doesn't exist in the default namespace. 
 	 * 
-	 * @throws IOException
+	 * @throws IOException if the table cannot be initialized.
 	 */
 	public void initTable() throws IOException {
 		HBaseAdmin admin = getHBaseAdmin();
@@ -122,6 +140,9 @@ public class WordRepository {
 			descriptor.addFamily(column);
 			admin.createTable(descriptor);
 		}
+		// Some versions of HBase seem to require this, other's don't.
+		if(admin.isTableDisabled(tableName))
+			admin.enableTable(tableName);
 	}
 
 	/**
