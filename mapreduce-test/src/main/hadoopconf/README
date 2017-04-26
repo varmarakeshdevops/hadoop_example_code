@@ -1,0 +1,2 @@
+These are updated versions of CDH5.9.0 hadoop configuration files that should be used to replace
+corresponding files in the same directories under /etc on the Oracle BigDataLite_4.7.0 appliance.
