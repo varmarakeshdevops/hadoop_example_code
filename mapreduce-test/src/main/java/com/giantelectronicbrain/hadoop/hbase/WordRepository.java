@@ -15,6 +15,8 @@ import org.springframework.data.hadoop.hbase.HbaseTemplate;
 import org.springframework.data.hadoop.hbase.RowMapper;
 import org.springframework.data.hadoop.hbase.TableCallback;
 
+import com.giantelectronicbrain.hadoop.IWordRepository;
+import com.giantelectronicbrain.hadoop.RepositoryException;
 import com.giantelectronicbrain.hadoop.Word;
 
 /**
@@ -25,7 +27,7 @@ import com.giantelectronicbrain.hadoop.Word;
  */
 @SuppressWarnings("deprecation")
 @org.springframework.stereotype.Repository
-public class WordRepository {
+public class WordRepository implements IWordRepository {
 
 	private volatile HBaseAdmin hbaseAdmin = null;
 	
@@ -86,24 +88,32 @@ public class WordRepository {
 	 * Returns true if the words table exists.
 	 * 
 	 * @return boolean true if table exists
-	 * @throws IOException if something goes wrong with the query.
+	 * @throws RepositoryException if something goes wrong with the query.
 	 */
-	public boolean tableExists() throws IOException {
-		return getHBaseAdmin().tableExists(tableName);
+	public boolean tableExists() throws RepositoryException {
+		try {
+			return getHBaseAdmin().tableExists(tableName);
+		} catch (IOException e) {
+			throw new RepositoryException(e.getMessage(),e);
+		}
 	}
 
 	/**
 	 * Delete the words table if it exists.
 	 * 
-	 * @throws IOException if the table cannot be deleted.
+	 * @throws RepositoryException if the table cannot be deleted.
 	 */
-	public void deleteTable() throws IOException {
-		HBaseAdmin admin = getHBaseAdmin();
-		if(admin.tableExists(tableName)) {
-			if(!admin.isTableDisabled(tableName)) {
-				admin.disableTable(tableName);
+	public void deleteTable() throws RepositoryException {
+		try {
+			HBaseAdmin admin = getHBaseAdmin();
+			if(admin.tableExists(tableName)) {
+				if(!admin.isTableDisabled(tableName)) {
+					admin.disableTable(tableName);
+				}
+				admin.deleteTable(tableName);
 			}
-			admin.deleteTable(tableName);
+		} catch (IOException e) {
+			throw new RepositoryException(e.getMessage(),e);
 		}
 	}
 
@@ -130,19 +140,23 @@ public class WordRepository {
 	/**
 	 * Create the words table if it doesn't exist in the default namespace. 
 	 * 
-	 * @throws IOException if the table cannot be initialized.
+	 * @throws RepositoryException if the table cannot be initialized.
 	 */
-	public void initTable() throws IOException {
-		HBaseAdmin admin = getHBaseAdmin();
-		if(!admin.tableExists(tableName)) {
-			HTableDescriptor descriptor = new HTableDescriptor(Bytes.toBytes(tableName));
-			HColumnDescriptor column = new HColumnDescriptor(CF_INFO);
-			descriptor.addFamily(column);
-			admin.createTable(descriptor);
+	public void initTable() throws RepositoryException {
+		try {
+			HBaseAdmin admin = getHBaseAdmin();
+			if(!admin.tableExists(tableName)) {
+				HTableDescriptor descriptor = new HTableDescriptor(Bytes.toBytes(tableName));
+				HColumnDescriptor column = new HColumnDescriptor(CF_INFO);
+				descriptor.addFamily(column);
+				admin.createTable(descriptor);
+			}
+			// Some versions of HBase seem to require this, other's don't.
+			if(admin.isTableDisabled(tableName))
+				admin.enableTable(tableName);
+		} catch (IOException e) {
+			throw new RepositoryException(e.getMessage(),e);
 		}
-		// Some versions of HBase seem to require this, other's don't.
-		if(admin.isTableDisabled(tableName))
-			admin.enableTable(tableName);
 	}
 
 	/**
@@ -186,6 +200,13 @@ public class WordRepository {
 				
 			}
 		});
+	}
+
+	/**
+	 * This doesn't really do anything in this implementation.
+	 */
+	@Override
+	public void close() {
 	}
 
 }

@@ -2,6 +2,8 @@ package com.giantelectronicbrain.hadoop.hive;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -21,7 +23,10 @@ import org.apache.hive.service.cli.thrift.TSessionHandle;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.TSocket;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import com.giantelectronicbrain.hadoop.IWordRepository;
+import com.giantelectronicbrain.hadoop.RepositoryException;
 import com.giantelectronicbrain.hadoop.Word;
 
 /**
@@ -33,7 +38,7 @@ import com.giantelectronicbrain.hadoop.Word;
  *
  */
 @org.springframework.stereotype.Repository
-public class WordRepository {
+public class WordRepository implements IWordRepository {
 	private static final Log LOG = LogFactory.getLog(WordRepository.class);
 	/**
 	 * Default URL for Hive thrift connection.
@@ -46,24 +51,22 @@ public class WordRepository {
 	/**
 	 * Default 10 second timeout for thrift network operations.
 	 */
-	public static final int DEFAULT_HIVE_TIMEOUT = 10000;
+	public static final int DEFAULT_HIVE_TIMEOUT = 1000000;
 
 	private String tableName = "words";
 	
-	/**
-	 * Get the name of the Hive table.
-	 * 
-	 * @return String hive table name
+	/* (non-Javadoc)
+	 * @see com.giantelectronicbrain.hadoop.hive.IWordRepository#getTableName()
 	 */
+	@Override
 	public String getTableName() {
 		return tableName;
 	}
 
-	/**
-	 * Set the name of the Hive table. Set this before you make queries.
-	 * 
-	 * @param tableName table name to use
+	/* (non-Javadoc)
+	 * @see com.giantelectronicbrain.hadoop.hive.IWordRepository#setTableName(java.lang.String)
 	 */
+	@Override
 	public void setTableName(String tableName) {
 		this.tableName = tableName;
 	}
@@ -75,9 +78,10 @@ public class WordRepository {
 	/**
 	 * Construct a repository using defaults.
 	 * 
-	 * @throws TException if a connection cannot be established.
+	 * @throws RepositoryException if a connection cannot be established.
 	 */
-	public WordRepository() throws TException {
+//	@Autowired
+	public WordRepository() throws RepositoryException {
 		this(DEFAULT_HIVE_SERVER_LOCATION,DEFAULT_HIVE_SERVER_PORT,DEFAULT_HIVE_TIMEOUT);
 	}
 	
@@ -87,116 +91,139 @@ public class WordRepository {
 	 * @param hiveServerLocation host name to make thrift connection to.
 	 * @param hiveServerPort port number to make thrift connection to.
 	 * @param timeout thrift timeout.
-	 * @throws TException if a connection cannot be established.
+	 * @throws RepositoryException if a connection cannot be established.
 	 */
-	public WordRepository(String hiveServerLocation,int hiveServerPort, int timeout) throws TException {
-		LOG.debug("Creating thrift connection to "+hiveServerLocation+":"+hiveServerPort);
-    	transport = new TSocket(hiveServerLocation, hiveServerPort);
-    	transport.setTimeout(timeout);
-    	
-    	TBinaryProtocol protocol =  new TBinaryProtocol(transport);
-    	client = new TCLIService.Client(protocol);
-    	transport.open();
-    	TOpenSessionReq openReq = new TOpenSessionReq();
-    	TOpenSessionResp openResp = client.OpenSession(openReq);
-    	sessHandle = openResp.getSessionHandle();
+	@SuppressWarnings("unchecked")
+	public WordRepository(String hiveServerLocation,int hiveServerPort, int timeout) throws RepositoryException {
+		try {
+			LOG.debug("Creating thrift connection to "+hiveServerLocation+":"+hiveServerPort);
+			transport = new TSocket(hiveServerLocation, hiveServerPort);
+			transport.setTimeout(timeout);
+			
+			TBinaryProtocol protocol =  new TBinaryProtocol(transport);
+			client = new TCLIService.Client(protocol);
+			transport.open();
+			TOpenSessionReq openReq = new TOpenSessionReq();
+			@SuppressWarnings("rawtypes")
+			Map configuration = new Properties();
+			configuration.put("hive.txn.manager","org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+//			configuration.put("hive.compactor.initiator.on","true");
+//			configuration.put("hive.compactor.worker.threads","1");
+			configuration.put("hive.support.concurrency","true");
+			configuration.put("hive.enforce.bucketing","true");
+			configuration.put("hive.exec.dynamic.partition.mode","nonstrict");
+			
+			openReq.setConfiguration(configuration); // maybe can put setup stuff here...
+			TOpenSessionResp openResp = client.OpenSession(openReq);
+			sessHandle = openResp.getSessionHandle();
+		} catch (TException te) {
+			throw new RepositoryException(te.getMessage(),te);
+		}
 	}
 	
-	/**
-	 * Close the thrift connection. This should be used to clean up resources.
+	/* (non-Javadoc)
+	 * @see com.giantelectronicbrain.hadoop.hive.IWordRepository#close()
 	 */
+	@Override
 	public void close() {
     	transport.close();
 	}
 	
-	/**
-	 * Find all the words in the Hive table and return them all as a List. <b>Note:</b> this really
-	 * won't scale well.
-	 * 
-	 * @return List&lt;String&gt; return records as a list in TSV form.
-	 * 
-	 * @throws TException if the query fails.
+	/* (non-Javadoc)
+	 * @see com.giantelectronicbrain.hadoop.hive.IWordRepository#findAll()
 	 */
-	public List<String> findAll() throws TException {
-		TExecuteStatementReq execReq = new TExecuteStatementReq(sessHandle, "SELECT * FROM "+tableName);
-    	TExecuteStatementResp execResp = client.ExecuteStatement(execReq);
-    	TOperationHandle stmtHandle = execResp.getOperationHandle();
+	@Override
+	public List<Word> findAll() throws RepositoryException {
+		try {
+			TExecuteStatementReq execReq = new TExecuteStatementReq(sessHandle, "SELECT * FROM "+tableName);
+			TExecuteStatementResp execResp = client.ExecuteStatement(execReq);
+			TOperationHandle stmtHandle = execResp.getOperationHandle();
 
-       	TFetchResultsReq fetchReq = new TFetchResultsReq(stmtHandle, TFetchOrientation.FETCH_FIRST, 100);
-    	TFetchResultsResp resultsResp = client.FetchResults(fetchReq);
+			TFetchResultsReq fetchReq = new TFetchResultsReq(stmtHandle, TFetchOrientation.FETCH_FIRST, 100);
+			TFetchResultsResp resultsResp = client.FetchResults(fetchReq);
 
-    	TRowSet resultsSet = resultsResp.getResults();
-		List<TRow> resultRows = resultsSet.getRows();
-		List<String> results = new ArrayList<String>();
-    	for(TRow row : resultRows){
-    	    results.add(row.toString());
-    	}
+			TRowSet resultsSet = resultsResp.getResults();
+			List<TRow> resultRows = resultsSet.getRows();
+			List<Word> results = new ArrayList<Word>();
+			for(TRow row : resultRows){
+				String w = (String) row.getFieldValue(row.fieldForId(0));
+				String c = (String) row.getFieldValue(row.fieldForId(1));
+				Word r = new Word(c,w);
+			    results.add(r);
+			}
 
-    	TCloseOperationReq closeReq = new TCloseOperationReq();
-    	closeReq.setOperationHandle(stmtHandle);
-    	client.CloseOperation(closeReq);
-    	
-    	return results;
+			TCloseOperationReq closeReq = new TCloseOperationReq();
+			closeReq.setOperationHandle(stmtHandle);
+			client.CloseOperation(closeReq);
+			
+			return results;
+		} catch (TException te) {
+			throw new RepositoryException(te.getMessage(),te);
+		}
 	}
 
-	/**
-	 * Make sure that the table exists, create it if it doesn't.
-	 * 
-	 * @throws TException if the table cannot be created or there is some other Hive error.
+	/* (non-Javadoc)
+	 * @see com.giantelectronicbrain.hadoop.hive.IWordRepository#initTable()
 	 */
-	public void initTable() throws TException {
+	@Override
+	public void initTable() throws RepositoryException {
     	TOperationHandle stmtHandle = null;
 		try {
-			TExecuteStatementReq execReq = new TExecuteStatementReq(sessHandle, "CREATE TABLE IF NOT EXISTS "+tableName+" (count int, word string)");
+			TExecuteStatementReq execReq = new TExecuteStatementReq(sessHandle, "CREATE TABLE IF NOT EXISTS "+tableName+" (count int, word string)"
+					+ " CLUSTERED BY (word) INTO 2 BUCKETS STORED AS orc TBLPROPERTIES('transactional'='true')");
 	    	TExecuteStatementResp execResp = client.ExecuteStatement(execReq);
 	    	stmtHandle = execResp.getOperationHandle();
 	    	if(execResp.getStatus().isSetErrorCode())
 	    		throw new TException(execResp.getStatus().getErrorMessage());
+		} catch (TException te) {
+			throw new RepositoryException(te.getMessage(),te);
 	    } finally {
 	    	if(stmtHandle != null) {
 		    	TCloseOperationReq closeReq = new TCloseOperationReq();
 		    	closeReq.setOperationHandle(stmtHandle);
-		    	client.CloseOperation(closeReq);
+		    	try {
+					client.CloseOperation(closeReq);
+				} catch (TException te) {
+					throw new RepositoryException(te.getMessage(),te);
+				}
 	    	}
 	    }
 	}
 	
-	/**
-	 * Save a word into the Hive table.
-	 * 
-	 * @param word Word to save.
-	 * @return Word the saved word.
-	 * @throws TException if the insert fails.
+	/* (non-Javadoc)
+	 * @see com.giantelectronicbrain.hadoop.hive.IWordRepository#save(com.giantelectronicbrain.hadoop.Word)
 	 */
-	public Word save(Word word) throws TException {
+	@Override
+	public Word save(Word word) throws RepositoryException {
 		return save(word.getWord(),word.getCount());
 	}
 	
-	/**
-	 * Delete the Hive table if it exists.
-	 * 
-	 * @throws TException if the table cannot be dropped.
+	/* (non-Javadoc)
+	 * @see com.giantelectronicbrain.hadoop.hive.IWordRepository#deleteTable()
 	 */
-	public void deleteTable() throws TException {
-		TExecuteStatementReq execReq = new TExecuteStatementReq(sessHandle, "DROP TABLE IF EXISTS "+tableName);
-    	TExecuteStatementResp execResp = client.ExecuteStatement(execReq);
-    	TOperationHandle stmtHandle = execResp.getOperationHandle();
-    	if(execResp.getStatus().isSetErrorCode()) {
-    		throw new TException(execResp.getStatus().getErrorMessage());
-    	}
+	@Override
+	public void deleteTable() throws RepositoryException {
+		try {
+			TExecuteStatementReq execReq = new TExecuteStatementReq(sessHandle, "DROP TABLE IF EXISTS "+tableName);
+			TExecuteStatementResp execResp = client.ExecuteStatement(execReq);
+			TOperationHandle stmtHandle = execResp.getOperationHandle();
+			if(execResp.getStatus().isSetErrorCode()) {
+				throw new TException(execResp.getStatus().getErrorMessage());
+			}
 
-    	TCloseOperationReq closeReq = new TCloseOperationReq();
-    	closeReq.setOperationHandle(stmtHandle);
-    	client.CloseOperation(closeReq);
+			TCloseOperationReq closeReq = new TCloseOperationReq();
+			closeReq.setOperationHandle(stmtHandle);
+			client.CloseOperation(closeReq);
+		} catch (TException te) {
+			throw new RepositoryException(te.getMessage(),te);
+		}
 	}
 	
-	/**
-	 * Return true if the table exists, false otherwise.
-	 * 
-	 * @return boolean true, the table exists, false it doesn't exist.
-	 * @throws TException if the query can't be executed.
+	/* (non-Javadoc)
+	 * @see com.giantelectronicbrain.hadoop.hive.IWordRepository#tableExists()
 	 */
-	public boolean tableExists() throws TException {
+	@Override
+	public boolean tableExists() throws RepositoryException {
 		TOperationHandle stmtHandle = null;
 		try {
 			TExecuteStatementReq execReq = new TExecuteStatementReq(sessHandle, "DESCRIBE "+tableName);
@@ -213,62 +240,69 @@ public class WordRepository {
 	       	TFetchResultsReq fetchReq = new TFetchResultsReq(stmtHandle, TFetchOrientation.FETCH_FIRST, 1);
 	    	TFetchResultsResp resultsResp = client.FetchResults(fetchReq);
 	    	LOG.debug("Result response for table existence query was "+resultsResp);
+		} catch (TException te) {
+			throw new RepositoryException(te.getMessage(),te);
 		} finally {
 			if(stmtHandle != null) {
 		    	TCloseOperationReq closeReq = new TCloseOperationReq();
 		    	closeReq.setOperationHandle(stmtHandle);
-		    	client.CloseOperation(closeReq);
+		    	try {
+					client.CloseOperation(closeReq);
+				} catch (TException te) {
+					throw new RepositoryException(te.getMessage(),te);
+				}
 			}
 		}
     	return true; // presumably if we get here, then the table exists...
 	}
 
-	/**
-	 * Delete a row with the given word as key.
-	 * 
-	 * @param key word to delete
-	 * @throws TException if deletion fails
+	/* (non-Javadoc)
+	 * @see com.giantelectronicbrain.hadoop.hive.IWordRepository#deleteRow(java.lang.String)
 	 */
-	public void deleteRow(String key) throws TException {
-		TExecuteStatementReq execReq = new TExecuteStatementReq(sessHandle, "DELETE FROM "+tableName+" WHERE word = "+key);
-    	TExecuteStatementResp execResp = client.ExecuteStatement(execReq);
-    	TOperationHandle stmtHandle = execResp.getOperationHandle();
-    	if(execResp.getStatus().isSetErrorCode()) {
-    		throw new TException(execResp.getStatus().getErrorMessage());
-    	}
+	@Override
+	public void deleteRow(String key) throws RepositoryException {
+		try {
+			TExecuteStatementReq execReq = new TExecuteStatementReq(sessHandle, "TRUNCATE TABLE IF EXISTS "+tableName);
+			TExecuteStatementResp execResp = client.ExecuteStatement(execReq);
+			TOperationHandle stmtHandle = execResp.getOperationHandle();
+			if(execResp.getStatus().isSetErrorCode()) {
+				throw new TException(execResp.getStatus().getErrorMessage());
+			}
 
-    	TCloseOperationReq closeReq = new TCloseOperationReq();
-    	closeReq.setOperationHandle(stmtHandle);
-    	client.CloseOperation(closeReq);
+			TCloseOperationReq closeReq = new TCloseOperationReq();
+			closeReq.setOperationHandle(stmtHandle);
+			client.CloseOperation(closeReq);
+		} catch (TException te) {
+			throw new RepositoryException(te.getMessage(),te);
+		}
 	}
 
-	/**
-	 * Delete all words from the table.
-	 * 
-	 * @throws TException if the query fails.
+	/* (non-Javadoc)
+	 * @see com.giantelectronicbrain.hadoop.hive.IWordRepository#clearTable()
 	 */
-	public void clearTable() throws TException {
-		TExecuteStatementReq execReq = new TExecuteStatementReq(sessHandle, "DELETE FROM "+tableName);
-    	TExecuteStatementResp execResp = client.ExecuteStatement(execReq);
-    	TOperationHandle stmtHandle = execResp.getOperationHandle();
-    	if(execResp.getStatus().isSetErrorCode()) {
-    		throw new TException(execResp.getStatus().getErrorMessage());
-    	}
+	@Override
+	public void clearTable() throws RepositoryException {
+		try {
+			TExecuteStatementReq execReq = new TExecuteStatementReq(sessHandle, "DELETE FROM "+tableName);
+			TExecuteStatementResp execResp = client.ExecuteStatement(execReq);
+			TOperationHandle stmtHandle = execResp.getOperationHandle();
+			if(execResp.getStatus().isSetErrorCode()) {
+				throw new TException(execResp.getStatus().getErrorMessage());
+			}
 
-    	TCloseOperationReq closeReq = new TCloseOperationReq();
-    	closeReq.setOperationHandle(stmtHandle);
-    	client.CloseOperation(closeReq);
+			TCloseOperationReq closeReq = new TCloseOperationReq();
+			closeReq.setOperationHandle(stmtHandle);
+			client.CloseOperation(closeReq);
+		} catch (TException te) {
+			throw new RepositoryException(te.getMessage(),te);
+		}
 	}
 	
-	/**
-	 * Save a word and its associated count.
-	 * 
-	 * @param word the word
-	 * @param count the count, this should be a valid int
-	 * @return a Word object containing the saved data.
-	 * @throws TException if the insert fails.
+	/* (non-Javadoc)
+	 * @see com.giantelectronicbrain.hadoop.hive.IWordRepository#save(java.lang.String, java.lang.String)
 	 */
-	public Word save(final String word, final String count) throws TException {
+	@Override
+	public Word save(final String word, final String count) throws RepositoryException {
     	TOperationHandle stmtHandle = null;
 		Word w = new Word(word,count);
 		try {
@@ -278,12 +312,17 @@ public class WordRepository {
 	    	if(execResp.getStatus().isSetErrorCode()) {
 	    		throw new TException(execResp.getStatus().getErrorMessage());
 	    	}
-
+		} catch (TException te) {
+			throw new RepositoryException(te.getMessage(),te);
 		} finally {
 			if(stmtHandle != null) {
 		    	TCloseOperationReq closeReq = new TCloseOperationReq();
 		    	closeReq.setOperationHandle(stmtHandle);
-		    	client.CloseOperation(closeReq);
+		    	try {
+					client.CloseOperation(closeReq);
+				} catch (TException te) {
+					throw new RepositoryException(te.getMessage(),te);
+				}
 			}
 		}
     	

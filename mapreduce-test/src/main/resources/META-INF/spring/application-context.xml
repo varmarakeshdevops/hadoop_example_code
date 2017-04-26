@@ -20,9 +20,8 @@
 	<!-- Hive template wires automatically to 'hiveClientFactory'-->
 	<!-- <hive-template /> -->
 	
-	<!-- wire hive template into a bean
 	<beans:bean id="hiveWordRepository" class="com.giantelectronicbrain.hadoop.hive.WordRepository">
-	</beans:bean>  -->
+	</beans:bean>
 
 	<!-- configuration to build a TEZ job using Cascading Spring support
 	Looks like Cascading Spring doesn't support hadoop 2.x! Will have to take a different approach -->
@@ -66,6 +65,14 @@
 		 mapper="com.giantelectronicbrain.hadoop.mapreduce.HdfsFileMapper"
 		 reducer="com.giantelectronicbrain.hadoop.hbase.HBaseWordReducer"/>
 		 
+	<job id="hiveWordcountJob"
+	     input-path="${wordcount.input.path}" 
+	     output-path="${extra.output.path}"
+	     libs="file:///home/oracle/git/AIMS_infosys_code_share/hadoop_example_code/mapreduce-test/build/lib/*"
+	     jar="file:///home/oracle/git/AIMS_infosys_code_share/hadoop_example_code/mapreduce-test/build/libs/mapreduce-test.jar"
+		 mapper="com.giantelectronicbrain.hadoop.mapreduce.HdfsFileMapper"
+		 reducer="com.giantelectronicbrain.hadoop.hive.HiveWordReducer"/>
+
 	<script id="setupScript" location="copy-files.groovy">
 		<property name="localSourceFile" value="${localSourceFile}"/>
 		<property name="inputDir" value="${wordcount.input.path}"/>
@@ -83,12 +90,24 @@
  		</script>
  	</pig-runner>
  	
+ 	<!-- copy libraries to the location used by Tez to distribute jars -->
+ 	<script language='groovy' run-at-startup='true'>
+	 	if(!fsh.test('/user/tez/lib')) {
+	 		fsh.mkdir('/user/tez/lib');
+	 		fsh.copyFromLocal('./build/lib/*.jar','/user/tez/lib');
+	 	}
+ 	</script>
+ 	
 	<job-runner id="runner" run-at-startup="false"
 	    	    pre-action="setupScript"
 			    job-ref="wordcountJob" />
 			    
 	<job-runner id="hbaseRunner" run-at-startup="false"
+	    	    pre-action="setupScript"
 			    job-ref="hbaseWordcountJob" />	  
 
+	<job-runner id="hiveRunner" run-at-startup="false"
+	    	    pre-action="setupScript"
+			    job-ref="hiveWordcountJob" />	  
 	
 </beans:beans>

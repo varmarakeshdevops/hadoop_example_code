@@ -32,6 +32,7 @@ public class HBaseWordReducerTest {
 		try {
 			reducer = new HBaseWordReducer();
 		} catch (Throwable t) {
+			t.printStackTrace();
 			fail("Creating mod reducer failed: "+t.getLocalizedMessage());
 		}
 	}

@@ -29,14 +29,7 @@ public class Driver {
 	/**
 	 * Drive example MapReduce jobs. 
 	 * 
-	 * Loads 2 jobs out of Spring Application Context and executes them. Also
-	 * loads a Spring Repository and initializes an HBase table with it. Each
-	 * job also runs a Groovy script to pull data into HDFS and delete stale target
-	 * files.
-	 * A PIG job will be executed which does basically the same thing. The
-	 * actual Pig script is defined in the application-context.xml.
-	 * Finally a version of the same job will be executed using Cascading API to
-	 * run directly on Tez.
+	 * Loads all the POC jobs and executes them all.
 	 * 
 	 * @param args these are unused.
 	 * @throws Exception if something goes wrong
@@ -47,34 +40,68 @@ public class Driver {
 		LOG.info("MapReduce Example with HDFS copy and HBase import Application Running");
 		context.registerShutdownHook();
 		
-		LOG.info("Performing basic HDFS file processing, outputs results to HDFS");
-		JobRunner mrRunner = (JobRunner) context.getBean("runner");
-		mrRunner.call();
+		try {
+			LOG.info("Performing basic HDFS file processing, outputs results to HDFS");
+			JobRunner mrRunner = (JobRunner) context.getBean("runner");
+			mrRunner.call();
+		} catch (Exception e2) {
+			e2.printStackTrace();
+		}
 		
-		LOG.info("Creating an HBase table");
-	    WordRepository wordRepository = context.getBean(WordRepository.class);
-	    wordRepository.initTable();
-	    wordRepository.clearTable();
+	    try {
+			LOG.info("Creating an HBase table");
+		    IWordRepository wordRepository = context.getBean(WordRepository.class);
+		    wordRepository.initTable();
+		    wordRepository.clearTable();
+		    
+			LOG.info("Performing map of HDFS data and push results to HBase");
+			JobRunner hbaseRunner = (JobRunner) context.getBean("hbaseRunner");
+			hbaseRunner.call();
+			
+			dumpWordRepository(wordRepository);
+
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
 	    
-	    LOG.info("Performing map of HDFS data and push results to HBase");
-		JobRunner hbaseRunner = (JobRunner) context.getBean("hbaseRunner");
-		hbaseRunner.call();
+	    try {
+			LOG.info("Creating a Hive table");
+			IWordRepository wordRepository = (IWordRepository) context.getBean("hiveWordRepository");
+			wordRepository.initTable();
+			wordRepository.clearTable();
+			
+			LOG.info("Performing map of HDFS data and push results to Hive");
+			JobRunner hiveRunner = (JobRunner) context.getBean("hiveRunner");
+			hiveRunner.call();
+			
+			dumpWordRepository(wordRepository);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
+		try {
+			LOG.info("Going to try to run a PIG script defined by Spring");
+			PigRunner pigRunner = (PigRunner) context.getBean("pigRunner");
+			pigRunner.call();
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		
+		try {
+			LOG.info("Execute Cascading Tez job");
+			TezFlow.DoTezFlow(false);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static void dumpWordRepository(IWordRepository wordRepository) throws RepositoryException {
 		List<Word> words = wordRepository.findAll();
 		words.sort(null);
 		System.out.println("Number of Words = "+words.size());
 		for(Word word : words) {
 			System.out.println(word);
 		}
-
-		LOG.info("Going to try to run a PIG script defined by Spring");
-		PigRunner pigRunner = (PigRunner) context.getBean("pigRunner");
-		pigRunner.call();
-		
-		LOG.info("Execute Cascading Tez job");
-//		CascadingRunner cRunner = (CascadingRunner) context.getBean("cascade");
-//		cRunner.call();
-		TezFlow.DoTezFlow(false);
 	}
-
 }

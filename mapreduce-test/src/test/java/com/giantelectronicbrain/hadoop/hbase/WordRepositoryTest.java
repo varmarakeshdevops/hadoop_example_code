@@ -18,7 +18,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.giantelectronicbrain.hadoop.IWordRepository;
 import com.giantelectronicbrain.hadoop.Word;
+import com.giantelectronicbrain.hadoop.RepositoryException;
 
 /**
  * @author tharter
@@ -29,10 +31,10 @@ import com.giantelectronicbrain.hadoop.Word;
 public class WordRepositoryTest {
 
 	@Autowired
-	WordRepository uut;
+	IWordRepository uut;
 
 	@Before
-	public void setup() throws IOException {
+	public void setup() throws RepositoryException {
 		uut.initTable(); // make sure table exists
 		uut.clearTable(); // insure known table state
 	}
@@ -41,7 +43,7 @@ public class WordRepositoryTest {
 	 * Test method for {@link com.giantelectronicbrain.hadoop.hbase.WordRepository#clearTable()}.
 	 */
 	@Test
-	public void testClearTable() {
+	public void testClearTable() throws RepositoryException {
 		uut.save("666", "waldo");
 		uut.clearTable();
 		List<Word> words = uut.findAll();
@@ -53,7 +55,7 @@ public class WordRepositoryTest {
 	 * Test method for {@link com.giantelectronicbrain.hadoop.hbase.WordRepository#findAll()}.
 	 */
 	@Test
-	public void testFindAll() {
+	public void testFindAll() throws RepositoryException {
 		uut.save("666", "waldo");
 		List<Word> words = uut.findAll();
 		assertNotNull(words);
@@ -72,7 +74,7 @@ public class WordRepositoryTest {
 			uut.deleteTable();
 			boolean tExists = uut.tableExists();
 			assertTrue("table should not exist",!tExists);
-		} catch (IOException e) {
+		} catch (RepositoryException e) {
 			fail("Delete table threw exception");
 			e.printStackTrace();
 		}
@@ -83,7 +85,7 @@ public class WordRepositoryTest {
 	 * @throws IOException 
 	 */
 	@Test
-	public void testInitTable() throws IOException {
+	public void testInitTable() throws RepositoryException {
 		uut.deleteTable();
 		uut.initTable();
 		assertTrue("table should exist",uut.tableExists());
