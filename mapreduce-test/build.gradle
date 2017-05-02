@@ -82,6 +82,7 @@ dependencies {
 //	compile 'org.apache.hadoop:hadoop-common:2.6.0'
 //	compile 'org.htrace:htrace-core:3.0.4'
 	compile 'org.springframework.data:spring-cascading:2.0.0.M5-cdh5'
+	compile 'org.apache.spark:spark-core_2.11:1.4.0'
 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
