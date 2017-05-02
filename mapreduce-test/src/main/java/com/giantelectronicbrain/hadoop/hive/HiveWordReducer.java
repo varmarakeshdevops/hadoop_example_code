@@ -48,7 +48,7 @@ public class HiveWordReducer extends Reducer<Text, IntWritable, Text, IntWritabl
 	 */
 	private void hiveOutputter(String word, int sum) throws RepositoryException {
 		LOG.trace("Outputting word to Hive repo "+word+"="+sum);
-		wordRepository.save(Integer.toString(sum), word);
+		wordRepository.save(word,sum);
 
 	}
 	

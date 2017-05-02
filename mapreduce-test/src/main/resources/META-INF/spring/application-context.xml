@@ -4,7 +4,11 @@
     xmlns:beans="http://www.springframework.org/schema/beans"
 	xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:cascading="http://www.springframework.org/schema/cascading"
+	xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+	xmlns:tx="http://www.springframework.org/schema/tx"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+	http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
 	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 	http://www.springframework.org/schema/cascading http://www.springframework.org/schema/cascading/spring-cascading.xsd
 	http://www.springframework.org/schema/hadoop http://www.springframework.org/schema/hadoop/spring-hadoop.xsd">
@@ -20,8 +24,42 @@
 	<!-- Hive template wires automatically to 'hiveClientFactory'-->
 	<!-- <hive-template /> -->
 	
+	<!-- Stuff to use JPA -->
+	<jpa:repositories base-package="com.giantelectronicbrain.hadoop.springrepo"/>
+	
+	<beans:bean id="testDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<beans:property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+		<beans:property name="url" value="jdbc:mysql://localhost:3306/test"/>
+		<beans:property name="username" value="test"/>
+		<beans:property name="password" value="test"/>
+	</beans:bean>
+	
+	<beans:bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+		<beans:property name='dataSource' ref='testDataSource'/>
+		<beans:property name="packagesToScan" value="com.giantelectronicbrain.hadoop"/>
+		<beans:property name="jpaVendorAdapter">
+			<beans:bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+				<beans:property name="showSql" value="false"/>
+				<beans:property name="generateDdl" value="true"/>
+				<beans:property name="databasePlatform" value="org.hibernate.dialect.MySQL5InnoDBDialect"/>
+			</beans:bean>
+		</beans:property>
+	</beans:bean>
+	
+<!-- 	<context:component-scan base-package="com.giantelectronicbrain.hadoop.springrepo"/> -->
+	<context:component-scan base-package="com.giantelectronicbrain.hadoop.hbase"/>
+	
+	<tx:annotation-driven transaction-manager='transactionManager'/>
+	<beans:bean id='transactionManager' class='org.springframework.orm.jpa.JpaTransactionManager'/>
+	
 	<beans:bean id="hiveWordRepository" class="com.giantelectronicbrain.hadoop.hive.WordRepository">
 	</beans:bean>
+
+	<beans:bean id="myJpaWordRepository" class="com.giantelectronicbrain.hadoop.springrepo.WordRepository">
+	</beans:bean>
+	
+<!-- 	<beans:bean id="hbaseWordRepository" class="com.giantelectronicbrain.hadoop.hbase.WordRepository">
+	</beans:bean> -->
 
 	<!-- configuration to build a TEZ job using Cascading Spring support
 	Looks like Cascading Spring doesn't support hadoop 2.x! Will have to take a different approach -->
@@ -32,7 +70,6 @@
 	
 	
 	<!-- This is the basic hadoop and hbase MR configuration stuff -->
-	<context:component-scan base-package="com.giantelectronicbrain.hadoop.hbase"/>
 	
 	<context:property-placeholder location="hadoop.properties"/>
 
@@ -73,6 +110,14 @@
 		 mapper="com.giantelectronicbrain.hadoop.mapreduce.HdfsFileMapper"
 		 reducer="com.giantelectronicbrain.hadoop.hive.HiveWordReducer"/>
 
+	<job id="jpaWordcountJob"
+	     input-path="${wordcount.input.path}" 
+	     output-path="${extra.output.path}"
+	     libs="file:///home/oracle/git/AIMS_infosys_code_share/hadoop_example_code/mapreduce-test/build/lib/*"
+	     jar="file:///home/oracle/git/AIMS_infosys_code_share/hadoop_example_code/mapreduce-test/build/libs/mapreduce-test.jar"
+		 mapper="com.giantelectronicbrain.hadoop.mapreduce.HdfsFileMapper"
+		 reducer="com.giantelectronicbrain.hadoop.springrepo.JpaWordReducer"/>
+		 
 	<script id="setupScript" location="copy-files.groovy">
 		<property name="localSourceFile" value="${localSourceFile}"/>
 		<property name="inputDir" value="${wordcount.input.path}"/>
@@ -109,5 +154,9 @@
 	<job-runner id="hiveRunner" run-at-startup="false"
 	    	    pre-action="setupScript"
 			    job-ref="hiveWordcountJob" />	  
+			    
+	<job-runner id="jpaRunner" run-at-startup="false"
+	    	    pre-action="setupScript"
+			    job-ref="jpaWordcountJob" />	  
 	
 </beans:beans>

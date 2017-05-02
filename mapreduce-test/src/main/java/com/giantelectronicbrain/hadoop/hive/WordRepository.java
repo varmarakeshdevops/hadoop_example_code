@@ -147,7 +147,7 @@ public class WordRepository implements IWordRepository {
 			List<Word> results = new ArrayList<Word>();
 			for(TRow row : resultRows){
 				String w = (String) row.getFieldValue(row.fieldForId(0));
-				String c = (String) row.getFieldValue(row.fieldForId(1));
+				Integer c = (Integer) row.getFieldValue(row.fieldForId(1));
 				Word r = new Word(c,w);
 			    results.add(r);
 			}
@@ -302,9 +302,9 @@ public class WordRepository implements IWordRepository {
 	 * @see com.giantelectronicbrain.hadoop.hive.IWordRepository#save(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public Word save(final String word, final String count) throws RepositoryException {
+	public Word save(final String word, final int count) throws RepositoryException {
     	TOperationHandle stmtHandle = null;
-		Word w = new Word(word,count);
+		Word w = new Word(count,word);
 		try {
 			TExecuteStatementReq execReq = new TExecuteStatementReq(sessHandle, "INSERT INTO TABLE "+tableName+" VALUES("+count+",'"+word+"')");
 	    	TExecuteStatementResp execResp = client.ExecuteStatement(execReq);

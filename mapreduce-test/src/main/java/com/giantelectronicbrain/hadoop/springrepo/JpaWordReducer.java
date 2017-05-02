@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.giantelectronicbrain.hadoop.hbase;
+package com.giantelectronicbrain.hadoop.springrepo;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -14,14 +14,16 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.giantelectronicbrain.hadoop.RepositoryException;
+
 /**
- * Reducer which does the summarizing word count step and puts the output into an HBase table.
+ * Reducer which does the summarizing word count step and puts the output into a JPA repository.
  * 
  * @author tharter
  *
  */
-public class HBaseWordReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
-	private static final Log LOG = LogFactory.getLog(HBaseWordReducer.class);
+public class JpaWordReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
+	private static final Log LOG = LogFactory.getLog(JpaWordReducer.class);
 	private static AbstractApplicationContext context;
 	private WordRepository wordRepository;
 	
@@ -31,7 +33,7 @@ public class HBaseWordReducer extends Reducer<Text, IntWritable, Text, IntWritab
 	 * mechanisms that are outside of the Spring world. Thus you <em>cannot use Spring annotations</em> etc
 	 * within MapReduce code!
 	 */
-	public HBaseWordReducer() {
+	public JpaWordReducer() {
 		super();
 		context = new ClassPathXmlApplicationContext("/META-INF/spring/application-context.xml",Driver.class);
 		wordRepository = context.getBean(WordRepository.class);
@@ -42,8 +44,10 @@ public class HBaseWordReducer extends Reducer<Text, IntWritable, Text, IntWritab
 	 * 
 	 * @param word
 	 * @param sum
+	 * @throws RepositoryException 
 	 */
-	private void hbaseOutputter(String word, int sum) {
+	private void jpaOutputter(String word, int sum) throws RepositoryException {
+		LOG.trace("Outputting word to Hive repo "+word+"="+sum);
 		wordRepository.save(word,sum);
 
 	}
@@ -59,7 +63,11 @@ public class HBaseWordReducer extends Reducer<Text, IntWritable, Text, IntWritab
 		while(vItr.hasNext()) {
 			sum += vItr.next().get();
 		}
-		hbaseOutputter(key.toString(),sum);		
+		try {
+			jpaOutputter(key.toString(),sum);
+		} catch (RepositoryException e) {
+			LOG.error("failed to write to hive repository",e);
+		}		
 	}
 	
 

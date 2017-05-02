@@ -91,7 +91,12 @@ dependencies {
 	testImplementation 'org.springframework:spring-test:4.3.4.RELEASE'
 	testImplementation 'org.apache.pig:pigunit:0.12.0-cdh5.9.0'
 	
-	
+	compile 'org.springframework.data:spring-data-jpa:1.11.3.RELEASE'
+	// Get some Mahout stuff to try out
+	compile 'org.apache.mahout:mahout-core:0.9-cdh5.9.0'
+	compile 'org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.0.Final'
+	compile 'org.hibernate:hibernate-core:5.2.10.Final'
+	compile 'mysql:mysql-connector-java:5.1.+' // useful for testing
 }
 
 task copyToLib(type: Copy) {

@@ -1,17 +1,15 @@
 /**
  * 
  */
-package com.giantelectronicbrain.hadoop.hbase;
+package com.giantelectronicbrain.hadoop.springrepo;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
-import java.io.IOException;
 import java.util.List;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,20 +17,28 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.giantelectronicbrain.hadoop.IWordRepository;
-import com.giantelectronicbrain.hadoop.Word;
 import com.giantelectronicbrain.hadoop.RepositoryException;
+import com.giantelectronicbrain.hadoop.Word;
 
 /**
+ * 
+ * Unit test the JPA implementation of IWordRepository.
+ * 
  * @author tharter
  *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "classpath:test-context.xml" })
+@ContextConfiguration(locations = { "classpath:jpatest-context.xml" })
 public class WordRepositoryTest {
 
 	@Autowired
 	IWordRepository uut;
 
+	/**
+	 * Put the UUT in a known state before each test.
+	 * 
+	 * @throws RepositoryException
+	 */
 	@Before
 	public void setup() throws RepositoryException {
 		uut.initTable(); // make sure table exists
@@ -40,7 +46,8 @@ public class WordRepositoryTest {
 	}
 	
 	/**
-	 * Test method for {@link com.giantelectronicbrain.hadoop.hbase.WordRepository#clearTable()}.
+	 * Test method for {@link com.giantelectronicbrain.hadoop.springrepo.WordRepository#clearTable()}.
+	 * @throws RepositoryException 
 	 */
 	@Test
 	public void testClearTable() throws RepositoryException {
@@ -52,7 +59,8 @@ public class WordRepositoryTest {
 	}
 	
 	/**
-	 * Test method for {@link com.giantelectronicbrain.hadoop.hbase.WordRepository#findAll()}.
+	 * Test method for {@link com.giantelectronicbrain.hadoop.springrepo.WordRepository#findAll()}.
+	 * @throws RepositoryException 
 	 */
 	@Test
 	public void testFindAll() throws RepositoryException {
@@ -63,32 +71,6 @@ public class WordRepositoryTest {
 		Word word = words.get(0);
 		assertEquals("word should be 'waldo'","waldo",word.getWord());
 		assertEquals("Count should be '666'",666,word.getCount());
-	}
-
-	/**
-	 * Test method for {@link com.giantelectronicbrain.hadoop.hbase.WordRepository#initTable()}.
-	 */
-	@Test
-	public void testDeleteTable() {
-		try {
-			uut.deleteTable();
-			boolean tExists = uut.tableExists();
-			assertTrue("table should not exist",!tExists);
-		} catch (RepositoryException e) {
-			fail("Delete table threw exception");
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * Test method for {@link com.giantelectronicbrain.hadoop.hbase.WordRepository#initTable()}.
-	 * @throws IOException 
-	 */
-	@Test
-	public void testInitTable() throws RepositoryException {
-		uut.deleteTable();
-		uut.initTable();
-		assertTrue("table should exist",uut.tableExists());
 	}
 
 }
