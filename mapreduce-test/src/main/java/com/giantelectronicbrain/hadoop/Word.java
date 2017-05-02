@@ -3,6 +3,10 @@
  */
 package com.giantelectronicbrain.hadoop;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
 /**
  * 
  * Simple DTO for interacting with various databases. Note that
@@ -11,16 +15,32 @@ package com.giantelectronicbrain.hadoop;
  * @author tharter
  *
  */
+@Entity
+@Table(name="words")
 public class Word implements Comparable<Word> {
-	private final String count;
-	private final String word;
+	private int count;
+	@Id
+	private String word;
 	
-	public Word(String count, String word) {
+	/**
+	 * This is really only provided to make JPA happy.
+	 */
+	public Word() {
+		
+	}
+	
+	/**
+	 * Create an initialized Word object. Note that these are immutable.
+	 * 
+	 * @param count the count, as a string.
+	 * @param word the word.
+	 */
+	public Word(int count, String word) {
 		this.count = count;
 		this.word = word;
 	}
 
-	public String getCount() {
+	public int getCount() {
 		return count;
 	}
 
@@ -42,7 +62,7 @@ public class Word implements Comparable<Word> {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((count == null) ? 0 : count.hashCode());
+		result = prime * result + count;
 		result = prime * result + ((word == null) ? 0 : word.hashCode());
 		return result;
 	}
@@ -56,10 +76,7 @@ public class Word implements Comparable<Word> {
 		if (getClass() != obj.getClass())
 			return false;
 		Word other = (Word) obj;
-		if (count == null) {
-			if (other.count != null)
-				return false;
-		} else if (!count.equals(other.count))
+		if (count != other.count)
 			return false;
 		if (word == null) {
 			if (other.word != null)

@@ -67,8 +67,8 @@ public class WordRepository implements IWordRepository {
 		return hbaseTemplate.find(tableName, "cfInfo", new RowMapper<Word>() {
 			@Override
 			public Word mapRow(Result result, int rowNum) throws Exception {
-				return new Word(Bytes.toString(result.getValue(CF_INFO, qCount)), 
-							    Bytes.toString(result.getValue(CF_INFO, qWord)));
+				return new Word(Bytes.toInt(result.getValue(CF_INFO, qCount)), 
+						Bytes.toString(result.getValue(CF_INFO, qWord)));
 			}
 		});
 
@@ -181,11 +181,11 @@ public class WordRepository implements IWordRepository {
 	/**
 	 * Save a word count to the HBase table. Word is the key.
 	 * 
-	 * @param count how often the word appears
 	 * @param word the word
+	 * @param count how often the word appears
 	 * @return a Word object
 	 */
-	public Word save(final String count, final String word) {
+	public Word save(final String word, final int count) {
 		return hbaseTemplate.execute(tableName, new TableCallback<Word>() {
 			public Word doInTable(HTableInterface table) throws Throwable {
 				Word wordDTO = new Word(count, word);

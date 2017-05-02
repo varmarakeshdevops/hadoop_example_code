@@ -96,6 +96,6 @@ public interface IWordRepository {
 	 * @return a Word object containing the saved data.
 	 * @throws RepositoryException if the insert fails.
 	 */
-	Word save(String word, String count) throws RepositoryException;
+	Word save(String word, int count) throws RepositoryException;
 
 }
