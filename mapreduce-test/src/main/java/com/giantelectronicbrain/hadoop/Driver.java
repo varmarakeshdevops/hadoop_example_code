@@ -80,7 +80,23 @@ public class Driver {
 			e.printStackTrace();
 		}
 		
-		try {
+	    try {
+			LOG.info("Creating a JPA table");
+			IWordRepository wordRepository = context.getBean(com.giantelectronicbrain.hadoop.springrepo.WordRepository.class);
+			wordRepository.initTable();
+			wordRepository.clearTable();
+			
+			LOG.info("Performing map of HDFS data and push results to JPA");
+			JobRunner jpaRunner = (JobRunner) context.getBean("jpaRunner");
+			jpaRunner.call();
+			
+			dumpWordRepository(wordRepository);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	    try {
 			LOG.info("Going to try to run a PIG script defined by Spring");
 			PigRunner pigRunner = (PigRunner) context.getBean("pigRunner");
 			pigRunner.call();
