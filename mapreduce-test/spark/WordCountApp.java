@@ -1,6 +1,6 @@
 package com.giantelectronicbrain.hadoop.spark;
 
-import com.boeing.process.SparkContextUtil;
+import com.giantelectronicbrain.process.SparkContextUtil;
 
 /**
  * 
