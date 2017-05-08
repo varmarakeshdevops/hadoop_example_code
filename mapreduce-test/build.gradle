@@ -23,6 +23,9 @@ configurations.all {
   resolutionStrategy.force 'com.google.guava:guava:15.0'
 //Not sure why this is needed...
   resolutionStrategy.force 'org.htrace:htrace-core:3.0.3'
+//Trying to fix spark
+//  resolutionStrategy.force 'org.mortbay.jetty:jetty:6.1.26'
+//  resolutionStrategy.force 'javax.servlet:servlet-api:3.0.1'
   
 }
 
@@ -52,13 +55,14 @@ repositories {
 }
 
 dependencies {
-    compile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.0.1'
+//    compile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.0.1'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.8.8'
     compile 'org.apache.spark:spark-core_2.10:1.5.1'
 
-
 // trying to get exact conformance to cdh5.9.0 jars
-	compile 'org.apache.hadoop:hadoop-common:2.6.0-cdh5.9.0'
+	compile('org.apache.hadoop:hadoop-common:2.6.0-cdh5.9.0') {
+//		exclude group: 'javax.servlet', module: 'servlet-api'
+	}
 	compile 'org.apache.hadoop:hadoop-client:2.6.0-cdh5.9.0'
 	compile 'org.apache.hadoop:hadoop-hdfs:2.6.0-cdh5.9.0'
 	compile 'org.apache.hbase:hbase-client:1.2.0-cdh5.9.0'
@@ -87,7 +91,8 @@ dependencies {
 //	compile 'org.apache.hadoop:hadoop-common:2.6.0'
 //	compile 'org.htrace:htrace-core:3.0.4'
 	compile 'org.springframework.data:spring-cascading:2.0.0.M5-cdh5'
-	//compile 'org.apache.spark:spark-core_2.11:1.4.0'
+//	compile 'org.apache.spark:spark-core_2.11:1.4.0'
+//	compile 'org.apache.spark:spark-core_2.10:1.6.0-cdh5.9.0'
 	
 
     // Use JUnit test framework
@@ -98,8 +103,14 @@ dependencies {
 	testImplementation 'org.springframework:spring-test:4.3.4.RELEASE'
 	testImplementation 'org.apache.pig:pigunit:0.12.0-cdh5.9.0'
 	
-	
-	
+	compile 'org.springframework.data:spring-data-jpa:1.11.3.RELEASE'
+	// Get some Mahout stuff to try out
+	compile 'org.apache.mahout:mahout-core:0.9-cdh5.9.0'
+	compile 'org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.0.Final'
+	compile 'org.hibernate:hibernate-core:5.2.10.Final'
+	compile 'mysql:mysql-connector-java:5.1.+' // useful for testing
+	// just a way of getting a copy of this jar
+	compile 'org.apache.tika:tika-app:1.14'
 }
 
 task copyToLib(type: Copy) {

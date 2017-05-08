@@ -23,7 +23,7 @@ public class SparkContextUtil {
 	 * parameter and create Java spark context. Each word in the file and the
 	 * count will be stored in JavapairRDD and finally stored to output folder.
 	 * 
-	 * @param args : File name
+	 * @param filename File name
 	 * 
 	 */
 
