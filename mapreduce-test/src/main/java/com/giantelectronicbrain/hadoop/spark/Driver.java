@@ -1,10 +1,8 @@
 package com.giantelectronicbrain.hadoop.spark;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 
 
 public class Driver {
@@ -25,7 +23,7 @@ public class Driver {
 		WordCount wordCount = (WordCount) context.getBean("wordCount");
 		wordCount.count();
 		LOG.info("Spring Spark Word Count Example End ");
-
+ 
 	}
 
 }

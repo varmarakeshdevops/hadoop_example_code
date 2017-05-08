@@ -1,3 +1,6 @@
 mapreduce-test/bin
 mapreduce-test/build
 
+SpringBootRestMongo/bin
+SpringBootRestMongo/build
+SpringBootRestMongo/.gradle
