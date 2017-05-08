@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd 
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/data/mongo http://www.springframework.org/schema/data/mongo/spring-mongo.xsd">		
+
+   <context:property-placeholder location="hadoop.properties"/>
+				    
+	<!--  mongo:mongo-client host="${hadoop.mongodb.host}" port="${mongo.port}" credentials="${mongo.user}:${mongo.pass}@${mongo.dbname}"-->
+   	<mongo:mongo-client host="${hadoop.mongodb.host}" port="${hadoop.mongodb.port}">
+   		 <mongo:client-options write-concern="NORMAL"
+   		 					   connections-per-host="10"            
+                               connect-timeout="30000"
+                               max-wait-time="10000"   />
+	</mongo:mongo-client>
+                   
+	<mongo:db-factory dbname="${hadoop.mongodb.schema}" mongo-ref="mongo" id="mongoDbFactory" />
+
+	<bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
+		<constructor-arg name="mongoDbFactory" ref="mongoDbFactory" />
+	</bean>
+
+	<bean id="employeeDAO" class="com.gaintelectronicbrain.hadoop.dao.EmployeeDAOImpl">
+		<constructor-arg name="mongoOps" ref="mongoTemplate"/>
+	</bean>
+
+</beans:beans>
