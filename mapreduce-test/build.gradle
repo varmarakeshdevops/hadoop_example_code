@@ -106,6 +106,8 @@ dependencies {
 	compile 'org.springframework.data:spring-data-jpa:1.11.3.RELEASE'
 	// Get some Mahout stuff to try out
 	compile 'org.apache.mahout:mahout-core:0.9-cdh5.9.0'
+	compile 'org.apache.mahout:mahout-integration:0.9-cdh5.9.0'
+	compile 'org.apache.mahout:mahout-mr:0.13.0'
 	compile 'org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.0.Final'
 	compile 'org.hibernate:hibernate-core:5.2.10.Final'
 	compile 'mysql:mysql-connector-java:5.1.+' // useful for testing
