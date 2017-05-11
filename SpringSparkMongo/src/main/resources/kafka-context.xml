@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd 
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/data/mongo http://www.springframework.org/schema/data/mongo/spring-mongo.xsd">		
+
+   <context:property-placeholder location="hadoop.properties"/>
+	
+	<!-- Producer -->
+ 
+	<bean id="template" class="org.springframework.kafka.core.KafkaTemplate">
+		<constructor-arg>
+			<bean class="org.springframework.kafka.core.DefaultKafkaProducerFactory">
+				<constructor-arg>
+					<map>
+						<entry key="bootstrap.servers" value="${kafka.server}" />
+						<entry key="acks" value="${kafka.acks}" />
+						<entry key="retries" value="${kafka.retries}" />
+						<entry key="batch.size" value="${kafka.batch.size}" />
+						<entry key="linger.ms" value="${kafka.linger.ms}" />
+						<entry key="buffer.memory" value="${kakfa.buffer.memory}" />
+						<entry key="key.serializer"
+							value="org.apache.kafka.common.serialization.StringSerializer" />
+						<entry key="value.serializer"
+							value="org.apache.kafka.common.serialization.StringSerializer" />
+					</map>
+				</constructor-arg>
+			</bean>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="wordProducer" class="com.giantelectronicbrain.hadoop.kafka.WordProducer">
+		<property name="kafkaTemplate" ref="template" />
+		<property name="topicName" value="${kafka.topic.name}" />
+	</bean>
+	
+	<!--Consumer-->
+	<!-- 
+	<bean id="container1"
+		class="org.springframework.kafka.listener.KafkaMessageListenerContainer">
+		<constructor-arg>
+			<bean class="org.springframework.kafka.core.DefaultKafkaConsumerFactory">
+				<constructor-arg>
+					<map>
+						<entry key="bootstrap.servers" value="${kafka.server}" />
+						<entry key="enable.auto.commit" value="false" />
+						<entry key="auto.commit.interval.ms" value="100" />
+						<entry key="session.timeout.ms" value="15000" />
+						<entry key="group.id" value="${kafka.topic.name}" />
+						<entry key="key.deserializer"
+							value="org.apache.kafka.common.serialization.StringDeserializer" />
+						<entry key="value.deserializer"
+							value="org.apache.kafka.common.serialization.StringDeserializer" />
+					</map>
+				</constructor-arg>
+			</bean>
+		</constructor-arg>
+
+		<constructor-arg>
+			<bean class="org.springframework.kafka.listener.config.ContainerProperties">
+				<constructor-arg name="topics" value="${kafka.topic.name}" />
+			</bean>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="workConsumer" class="com.giantelectronicbrain.hadoop.kafka.WorkConsumer">
+		<property name="topicName" value="${kafka.topic.name}" />
+	</bean>  -->
+
+</beans:beans>
