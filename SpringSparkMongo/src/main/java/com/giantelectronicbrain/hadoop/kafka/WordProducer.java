@@ -2,6 +2,7 @@ package com.giantelectronicbrain.hadoop.kafka;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.util.concurrent.ListenableFuture;
@@ -11,29 +12,10 @@ public class WordProducer {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(WordProducer.class);
 	
-	public KafkaTemplate<String, String> getKafkaTemplate() {
-		return kafkaTemplate;
-	}
-
-	public void setKafkaTemplate(KafkaTemplate<String, String> kafkaTemplate) {
-		this.kafkaTemplate = kafkaTemplate;
-	}
-
-	public String getTopicName() {
-		return topicName;
-	}
-
-	public void setTopicName(String topicName) {
-		this.topicName = topicName;
-	}
-
-
+	@Autowired
 	private KafkaTemplate<String, String> kafkaTemplate;
 	
-	private String topicName;
-	
-	
-	public void send(String message) {
+	public void send(String topicName, String message) {
 		LOGGER.info("WordProducer Sending message...");
 	    // the KafkaTemplate provides asynchronous send methods returning a Future
 	    ListenableFuture<SendResult<String, String>> future = kafkaTemplate.send(topicName, message);
@@ -54,5 +36,5 @@ public class WordProducer {
 	    });
 	    LOGGER.info("###########   WordProducer() Stopped   ###############");
 	  }
-
+	
 }

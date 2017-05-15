@@ -11,7 +11,7 @@
    <context:property-placeholder location="hadoop.properties"/>
 	
 	<!-- Producer -->
- 
+    <!-- 
 	<bean id="template" class="org.springframework.kafka.core.KafkaTemplate">
 		<constructor-arg>
 			<bean class="org.springframework.kafka.core.DefaultKafkaProducerFactory">
@@ -36,7 +36,7 @@
 	<bean id="wordProducer" class="com.giantelectronicbrain.hadoop.kafka.WordProducer">
 		<property name="kafkaTemplate" ref="template" />
 		<property name="topicName" value="${kafka.topic.name}" />
-	</bean>
+	</bean>  -->
 	
 	<!--Consumer-->
 	<!-- 
