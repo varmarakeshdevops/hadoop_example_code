@@ -143,9 +143,16 @@
 	 	}
  	</script>
  	
+ 	<script language="groovy" id="catScript">
+ 		<property name="outputFile" value="${wordcount.output.path}/part-r-00000"/>
+ 		System.out.println("GOT HERE! Output file is "+outputFile);
+ 		System.out.println(fsh.cat(outputFile).toString());
+ 	</script>
+ 	
 	<job-runner id="runner" run-at-startup="false"
 	    	    pre-action="setupScript"
-			    job-ref="wordcountJob" />
+			    job-ref="wordcountJob"
+ 			    post-action="catScript"/>
 			    
 	<job-runner id="hbaseRunner" run-at-startup="false"
 	    	    pre-action="setupScript"

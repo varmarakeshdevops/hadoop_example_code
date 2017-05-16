@@ -3,11 +3,14 @@
  */
 package com.giantelectronicbrain.hadoop.mahout;
 
+import java.util.Map;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.mahout.clustering.evaluation.ClusterEvaluator;
+import org.apache.mahout.math.Vector;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -37,6 +40,8 @@ public class EvaluateCluster {
 		clusterEvaluator = new ClusterEvaluator(config,path);
 		Double interClusterDensity = clusterEvaluator.interClusterDensity();
 		LOG.info("Inter-cluster density is "+interClusterDensity);
+		Map<Integer,Vector> vmap = clusterEvaluator.interClusterDistances();
+		LOG.info("VMAP "+vmap);
 //this part needs some work apparently
 //		Double intraClusterDensity = clusterEvaluator.intraClusterDensity();
 //		LOG.info("Intra-cluster average density is "+intraClusterDensity);
