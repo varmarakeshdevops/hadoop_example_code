@@ -61,12 +61,12 @@ public class WordCount {
         counts.saveAsTextFile(outputDir);
         
         //Store all word count details in mongoDB
-        List<Tuple2<String, Integer>> list = counts.collect();
+       /* List<Tuple2<String, Integer>> list = counts.collect();
         list.forEach(item->{
         	//insert each word & count in Word collection (MongoDB)
         	wordDAO.create(new Word(item._1, item._2));
         	
-        });
+        }); */
         
     }
     
