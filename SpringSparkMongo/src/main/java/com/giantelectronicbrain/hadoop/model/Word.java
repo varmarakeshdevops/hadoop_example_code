@@ -1,12 +1,12 @@
 /**
  * 
  */
-package com.giantelectronicbrain.hadoop.spark;
+package com.giantelectronicbrain.hadoop.model;
 
 
 
 public class Word implements Comparable<Word> {
-	private int count;
+	private Integer count;
 
 	private String word;
 	
@@ -23,12 +23,12 @@ public class Word implements Comparable<Word> {
 	 * @param count the count, as a string.
 	 * @param word the word.
 	 */
-	public Word(int count, String word) {
+	public Word( String word, Integer count) {
 		this.count = count;
 		this.word = word;
 	}
 
-	public int getCount() {
+	public Integer getCount() {
 		return count;
 	}
 
