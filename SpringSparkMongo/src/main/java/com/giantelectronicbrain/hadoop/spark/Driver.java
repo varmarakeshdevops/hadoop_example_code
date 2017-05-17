@@ -16,7 +16,7 @@ public class Driver {
 	public static void main(String[] args) {
 		System.setProperty("hadoop.home.dir", "C:\\Users\\winutils");
 		@SuppressWarnings("resource")
-		AbstractApplicationContext context = new ClassPathXmlApplicationContext("/spark-context.xml",Driver.class);
+		AbstractApplicationContext context = new ClassPathXmlApplicationContext("/applicationContext.xml",Driver.class);
 		LOG.info("Spring Spark Example Starting ");
 		context.registerShutdownHook();
 		

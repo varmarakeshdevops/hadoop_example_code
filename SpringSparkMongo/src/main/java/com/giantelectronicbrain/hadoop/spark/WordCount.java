@@ -1,6 +1,7 @@
 package com.giantelectronicbrain.hadoop.spark;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -12,6 +13,9 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import com.giantelectronicbrain.hadoop.dao.WordDAO;
+import com.giantelectronicbrain.hadoop.model.Word;
 
 import scala.Tuple2;
 
@@ -25,8 +29,12 @@ public class WordCount {
 	private static final Log LOG = LogFactory.getLog(WordCount.class);
     
     private SparkConfig sparkConfig;
+    
+    private WordDAO wordDAO;
 
-    @Value("${spark.input.file}")
+
+
+	@Value("${spark.input.file}")
     private String inputFile;
     
     @Value("${spark.output.dir}")
@@ -52,23 +60,14 @@ public class WordCount {
         
         counts.saveAsTextFile(outputDir);
         
-
-        // filter out words with less than threshold occurrences
-      /*  JavaPairRDD<String, Integer> filtered = counts.filter(tup -> tup._2() >= threshold);
-
-        // count characters
-        JavaPairRDD<Character, Integer> charCounts = filtered.flatMap(
-                s -> {
-                    Collection<Character> chars = new ArrayList<>(s._1().length());
-                    for (char c : s._1().toCharArray()) {
-                        chars.add(c);
-                    }
-                    return chars;
-                }
-        ).mapToPair(c -> new Tuple2<>(c, 1))
-                .reduceByKey((i1, i2) -> i1 + i2);
-
-        LOG.info(charCounts.collect()); */
+        //Store all word count details in mongoDB
+        List<Tuple2<String, Integer>> list = counts.collect();
+        list.forEach(item->{
+        	//insert each word & count in Word collection (MongoDB)
+        	wordDAO.create(new Word(item._1, item._2));
+        	
+        });
+        
     }
     
     public SparkConfig getSparkConfig() {
@@ -78,6 +77,14 @@ public class WordCount {
 
 	public void setSparkConfig(SparkConfig sparkConfig) {
 		this.sparkConfig = sparkConfig;
+	}
+	
+    public WordDAO getWordDAO() {
+		return wordDAO;
+	}
+
+	public void setWordDAO(WordDAO wordDAO) {
+		this.wordDAO = wordDAO;
 	}
 
 

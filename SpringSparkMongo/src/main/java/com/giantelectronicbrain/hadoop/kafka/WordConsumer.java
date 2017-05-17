@@ -25,7 +25,7 @@ public class WordConsumer {
 	    return latch;
 	}
 
-	@KafkaListener(topics = "test")
+	@KafkaListener(topics = "${kafka.topic.name}")
 	public void receive(String message) {
 		LOGGER.info("received message='{}'", message);
 		latch.countDown();
