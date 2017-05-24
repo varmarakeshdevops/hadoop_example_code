@@ -17,7 +17,7 @@ public class Driver {
 		System.setProperty("hadoop.home.dir", "C:\\Users\\winutils");
 		@SuppressWarnings("resource")
 		AbstractApplicationContext context = new ClassPathXmlApplicationContext("/applicationContext.xml",Driver.class);
-		LOG.info("Spring Spark Example Starting ");
+		LOG.info("Spring Spark Example Starting");
 		context.registerShutdownHook();
 		
 		WordCount wordCount = (WordCount) context.getBean("wordCount");

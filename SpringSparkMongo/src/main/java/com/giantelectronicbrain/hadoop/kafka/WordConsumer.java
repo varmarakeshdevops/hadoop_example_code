@@ -25,10 +25,10 @@ public class WordConsumer {
 	    return latch;
 	}
 
-	@KafkaListener(topics = "${kafka.topic.name}")
+	/*@KafkaListener(topics = "${kafka.topic.name}")
 	public void receive(String message) {
 		LOGGER.info("received message='{}'", message);
 		latch.countDown();
-	}
+	}*/
 
 }

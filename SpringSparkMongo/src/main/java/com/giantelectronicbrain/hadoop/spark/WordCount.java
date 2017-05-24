@@ -11,6 +11,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.FlatMapFunction;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -48,8 +49,9 @@ public class WordCount {
     	
     	JavaSparkContext javaSparkContext = sparkConfig.javaSparkContext();
 
-        JavaRDD<String> tokenized = javaSparkContext.textFile(inputFile).flatMap((s1) -> Arrays.asList(s1.split(" ")));
-
+        
+    	//JavaRDD<String> tokenized = javaSparkContext.textFile(inputFile).flatMap((s1) -> Arrays.asList(s1.split(" ")));
+    	JavaRDD<String> tokenized = javaSparkContext.textFile(inputFile).flatMap((s1) -> Arrays.asList(s1.split(" ")).iterator());
         // count the occurrence of each word
         JavaPairRDD<String, Integer> counts = tokenized
                 .mapToPair(s -> new Tuple2<>(s, 1))
