@@ -23,10 +23,6 @@ configurations.all {
   resolutionStrategy.force 'com.google.guava:guava:15.0'
 //Not sure why this is needed...
   resolutionStrategy.force 'org.htrace:htrace-core:3.0.3'
-//Trying to fix spark
-//  resolutionStrategy.force 'org.mortbay.jetty:jetty:6.1.26'
-//  resolutionStrategy.force 'javax.servlet:servlet-api:3.0.1'
-  
 }
 
 // In this section you declare where to find the dependencies of your project
