@@ -4,3 +4,4 @@ mapreduce-test/build
 SpringBootRestMongo/bin
 SpringBootRestMongo/build
 SpringBootRestMongo/.gradle
+/mapreduce-test.rar
