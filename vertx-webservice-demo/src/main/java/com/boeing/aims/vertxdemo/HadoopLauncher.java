@@ -30,15 +30,21 @@ public class HadoopLauncher {
 		decoder = cs.newDecoder();
 	}
 
-			
-	public String launch(String command) throws IOException {
-		LOG.trace("Processing command: '"+command+"'");
-		String[] cmdArray = command.split("\\%20");
-		LOG.trace("Command is: '"+cmdArray[0]+"'");
+	/**
+	 * Launch a command. This will launch the given command, collect its output, and return the output
+	 * as a string when the command completes. This is all done synchronously, so don't call it directly
+	 * from a verticle.
+	 * 
+	 * @param command array containing arguments to ProcessBuilder.command()
+	 * @return String output from launched command
+	 * @throws IOException on failure to launch command
+	 */
+	public String launch(String[] command) throws IOException {
+		LOG.trace("Processing command: '"+command[0]+"'");
 		ProcessBuilder pb = new ProcessBuilder();
 		Map<String,String> env = pb.environment();
-		env.put("HADOOP_CLASSPATH","build/lib/*:"+env.get("HADOOP_CLASSPATH"));
-		pb.command(cmdArray);
+		env.put("HADOOP_CLASSPATH","../mapreduce-test/build/lib/*:"+env.get("HADOOP_CLASSPATH"));
+		pb.command(command);
 		pb.redirectErrorStream(true);
 		Process p = pb.start();
 		InputStream stdout = p.getInputStream();
