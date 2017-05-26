@@ -1,4 +1,4 @@
-package com.giantelectronicbrain.hadoop.mapreduce.controller;
+package com.giantelectronicbrain.hadoop.mapreduce;
  import java.util.HashMap;
 import java.util.Map;
 
@@ -29,7 +29,7 @@ public class MapReduceController {
 			
 			runner.call();
 			dataMap.put("status", "1");
-	        dataMap.put("statusMessage", "JobRunner has been completed Successfully");
+	        dataMap.put("statusMessage", "MapReduce JobRunner has been completed successfully");
 		} catch (Exception e2) {
 			e2.printStackTrace();
 			dataMap.put("statusMessage", "JobRunner Failed");

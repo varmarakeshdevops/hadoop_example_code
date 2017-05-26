@@ -18,7 +18,7 @@ import com.giantelectronicbrain.hadoop.Word;
  * HBase table using the Hive API.
  * 
  * @author tharter
- *
+ * 
  */
 public class Driver {
 	private static final Log LOG = LogFactory.getLog(Driver.class);
@@ -33,7 +33,7 @@ public class Driver {
 		try {
 		    context = new ClassPathXmlApplicationContext("/META-INF/spring/application-context.xml",Driver.class);
 		    
-		    WordRepository wordRepository = context.getBean(WordRepository.class);
+		    HbaseWordRepository wordRepository = context.getBean(HbaseWordRepository.class);
 		    wordRepository.initTable();
 		    
 			JobRunner hbaseRunner = (JobRunner) context.getBean("hbaseRunner");

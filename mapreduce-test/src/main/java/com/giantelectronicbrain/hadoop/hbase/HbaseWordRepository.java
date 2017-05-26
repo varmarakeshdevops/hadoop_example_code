@@ -27,7 +27,7 @@ import com.giantelectronicbrain.hadoop.Word;
  */
 @SuppressWarnings("deprecation")
 @org.springframework.stereotype.Repository
-public class WordRepository implements IWordRepository {
+public class HbaseWordRepository implements IWordRepository {
 
 	private volatile HBaseAdmin hbaseAdmin = null;
 	

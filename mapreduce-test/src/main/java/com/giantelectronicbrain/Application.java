@@ -1,4 +1,4 @@
-package com.giantelectronicbrain.hadoop.mapreduce;
+package com.giantelectronicbrain;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

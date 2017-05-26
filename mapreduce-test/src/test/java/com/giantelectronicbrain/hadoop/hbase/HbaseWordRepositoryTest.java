@@ -28,7 +28,7 @@ import com.giantelectronicbrain.hadoop.RepositoryException;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:test-context.xml" })
-public class WordRepositoryTest {
+public class HbaseWordRepositoryTest {
 
 	@Autowired
 	IWordRepository uut;
@@ -40,7 +40,7 @@ public class WordRepositoryTest {
 	}
 	
 	/**
-	 * Test method for {@link com.giantelectronicbrain.hadoop.hbase.WordRepository#clearTable()}.
+	 * Test method for {@link com.giantelectronicbrain.hadoop.hbase.HbaseWordRepository#clearTable()}.
 	 */
 	@Test
 	public void testClearTable() throws RepositoryException {
@@ -52,7 +52,7 @@ public class WordRepositoryTest {
 	}
 	
 	/**
-	 * Test method for {@link com.giantelectronicbrain.hadoop.hbase.WordRepository#findAll()}.
+	 * Test method for {@link com.giantelectronicbrain.hadoop.hbase.HbaseWordRepository#findAll()}.
 	 */
 	@Test
 	public void testFindAll() throws RepositoryException {
@@ -66,7 +66,7 @@ public class WordRepositoryTest {
 	}
 
 	/**
-	 * Test method for {@link com.giantelectronicbrain.hadoop.hbase.WordRepository#initTable()}.
+	 * Test method for {@link com.giantelectronicbrain.hadoop.hbase.HbaseWordRepository#initTable()}.
 	 */
 	@Test
 	public void testDeleteTable() {
@@ -81,7 +81,7 @@ public class WordRepositoryTest {
 	}
 
 	/**
-	 * Test method for {@link com.giantelectronicbrain.hadoop.hbase.WordRepository#initTable()}.
+	 * Test method for {@link com.giantelectronicbrain.hadoop.hbase.HbaseWordRepository#initTable()}.
 	 * @throws IOException 
 	 */
 	@Test

@@ -38,8 +38,8 @@ import com.giantelectronicbrain.hadoop.Word;
  *
  */
 @org.springframework.stereotype.Repository
-public class WordRepository implements IWordRepository {
-	private static final Log LOG = LogFactory.getLog(WordRepository.class);
+public class HiveWordRepository implements IWordRepository {
+	private static final Log LOG = LogFactory.getLog(HiveWordRepository.class);
 	/**
 	 * Default URL for Hive thrift connection.
 	 */
@@ -81,7 +81,7 @@ public class WordRepository implements IWordRepository {
 	 * @throws RepositoryException if a connection cannot be established.
 	 */
 //	@Autowired
-	public WordRepository() throws RepositoryException {
+	public HiveWordRepository() throws RepositoryException {
 		this(DEFAULT_HIVE_SERVER_LOCATION,DEFAULT_HIVE_SERVER_PORT,DEFAULT_HIVE_TIMEOUT);
 	}
 	
@@ -94,7 +94,7 @@ public class WordRepository implements IWordRepository {
 	 * @throws RepositoryException if a connection cannot be established.
 	 */
 	@SuppressWarnings("unchecked")
-	public WordRepository(String hiveServerLocation,int hiveServerPort, int timeout) throws RepositoryException {
+	public HiveWordRepository(String hiveServerLocation,int hiveServerPort, int timeout) throws RepositoryException {
 		try {
 			LOG.debug("Creating thrift connection to "+hiveServerLocation+":"+hiveServerPort);
 			transport = new TSocket(hiveServerLocation, hiveServerPort);

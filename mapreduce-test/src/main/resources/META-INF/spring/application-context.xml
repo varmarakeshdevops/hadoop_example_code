@@ -52,7 +52,7 @@
 	<tx:annotation-driven transaction-manager='transactionManager'/>
 	<beans:bean id='transactionManager' class='org.springframework.orm.jpa.JpaTransactionManager'/>
 	
-	<beans:bean id="hiveWordRepository" class="com.giantelectronicbrain.hadoop.hive.WordRepository">
+	<beans:bean id="hiveWordRepository" class="com.giantelectronicbrain.hadoop.hive.HiveWordRepository">
 	</beans:bean>
 
 	<beans:bean id="myJpaWordRepository" class="com.giantelectronicbrain.hadoop.springrepo.WordRepository">

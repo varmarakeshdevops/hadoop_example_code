@@ -25,7 +25,7 @@ import com.giantelectronicbrain.hadoop.RepositoryException;
 public class HiveWordReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
 	private static final Log LOG = LogFactory.getLog(HiveWordReducer.class);
 	private static AbstractApplicationContext context;
-	private WordRepository wordRepository;
+	private HiveWordRepository wordRepository;
 	
 	/**
 	 * <b>Note:</b> We must manually instantiate our own Spring context and inject beans by hand in
@@ -36,7 +36,7 @@ public class HiveWordReducer extends Reducer<Text, IntWritable, Text, IntWritabl
 	public HiveWordReducer() {
 		super();
 		context = new ClassPathXmlApplicationContext("/META-INF/spring/application-context.xml",Driver.class);
-		wordRepository = context.getBean(WordRepository.class);
+		wordRepository = context.getBean(HiveWordRepository.class);
 	}
 	
 	/**

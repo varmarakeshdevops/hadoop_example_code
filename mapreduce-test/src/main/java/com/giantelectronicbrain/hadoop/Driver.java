@@ -14,7 +14,7 @@ import org.springframework.data.hadoop.pig.PigRunner;
 
 import com.giantelectronicbrain.hadoop.Word;
 import com.giantelectronicbrain.hadoop.cascading.tez.TezFlow;
-import com.giantelectronicbrain.hadoop.hbase.WordRepository;
+import com.giantelectronicbrain.hadoop.hbase.HbaseWordRepository;
 
 /**
  * Just do some practicing with building a MapReduce setup and running it. This
@@ -50,7 +50,7 @@ public class Driver {
 		
 	    try {
 			LOG.info("Creating an HBase table");
-		    IWordRepository wordRepository = context.getBean(WordRepository.class);
+		    IWordRepository wordRepository = context.getBean(HbaseWordRepository.class);
 		    wordRepository.initTable();
 		    wordRepository.clearTable();
 		    
