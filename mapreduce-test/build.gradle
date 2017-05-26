@@ -145,3 +145,7 @@ task copyToLib(type: Copy) {
     into "$buildDir/lib"
     from configurations.runtime
 }
+
+test {
+	exclude '**/hive/WordRepositoryTest*'
+}

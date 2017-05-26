@@ -23,7 +23,6 @@ import org.apache.hive.service.cli.thrift.TSessionHandle;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.TSocket;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.giantelectronicbrain.hadoop.IWordRepository;
 import com.giantelectronicbrain.hadoop.RepositoryException;
@@ -33,6 +32,11 @@ import com.giantelectronicbrain.hadoop.Word;
  * Spring Repository stereotype to push words and counts into a Hive Table.
  * NOTE: This doesn't actually seem to work in the CDH5.9.0 environment, so
  * it hasn't been fully tested or wrapped into the other examples.
+ * 
+ * NOTE: And now Hive is using the HTTP protocol instead of Thrift in order to 
+ * integrate with Knox, so this code is probably totally obsolete. At the very
+ * least I haven't found documentation on how to adapt it to the web service
+ * based API. Instead the best option is to get the JDBC driver to work.
  * 
  * @author tharter
  *
@@ -70,7 +74,7 @@ public class WordRepository implements IWordRepository {
 	public void setTableName(String tableName) {
 		this.tableName = tableName;
 	}
-
+	
 	private TCLIService.Client client;
 	private TSessionHandle sessHandle;
 	private TSocket transport;
