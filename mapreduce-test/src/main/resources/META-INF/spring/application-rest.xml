@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/hadoop"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:cascading="http://www.springframework.org/schema/cascading"
+	xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+	http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/cascading http://www.springframework.org/schema/cascading/spring-cascading.xsd
+	http://www.springframework.org/schema/hadoop http://www.springframework.org/schema/hadoop/spring-hadoop.xsd">
+
+	<!-- by default, the definition name is 'hiveClientFactory' -->
+<!-- <hive-client-factory id="hiveClientFactory" />
+	<beans:bean id="hiveDriver" class="org.apache.hive.jdbc.HiveDriver"/>
+	<beans:bean id="hiveDataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
+	  <beans:constructor-arg name="driver" ref="hiveDriver"/>
+	  <beans:constructor-arg name="url" value="jdbc:hive2://localhost:10000"/>
+	</beans:bean> -->
+
+	<!-- Hive template wires automatically to 'hiveClientFactory'-->
+	<!-- <hive-template /> -->
+	
+	<!-- Stuff to use JPA -->
+	<jpa:repositories base-package="com.giantelectronicbrain.hadoop.springrepo"/>
+	
+	<beans:bean id="testDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<beans:property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+		<beans:property name="url" value="jdbc:mysql://localhost:3306/test"/>
+		<beans:property name="username" value="test"/>
+		<beans:property name="password" value="test"/>
+	</beans:bean>
+	
+	<beans:bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+		<beans:property name='dataSource' ref='testDataSource'/>
+		<beans:property name="packagesToScan" value="com.giantelectronicbrain.hadoop"/>
+		<beans:property name="jpaVendorAdapter">
+			<beans:bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+				<beans:property name="showSql" value="false"/>
+				<beans:property name="generateDdl" value="true"/>
+				<beans:property name="databasePlatform" value="org.hibernate.dialect.MySQL5InnoDBDialect"/>
+			</beans:bean>
+		</beans:property>
+	</beans:bean>
+	
+<!-- 	<context:component-scan base-package="com.giantelectronicbrain.hadoop.springrepo"/> -->
+	<context:component-scan base-package="com.giantelectronicbrain.hadoop.hbase"/>
+	
+	<tx:annotation-driven transaction-manager='transactionManager'/>
+	<beans:bean id='transactionManager' class='org.springframework.orm.jpa.JpaTransactionManager'/>
+	
+	<beans:bean id="hiveWordRepository" class="com.giantelectronicbrain.hadoop.hive.HiveWordRepository">
+	</beans:bean>
+
+	<beans:bean id="myJpaWordRepository" class="com.giantelectronicbrain.hadoop.springrepo.WordRepository">
+	</beans:bean>
+	
+<!-- 	<beans:bean id="hbaseWordRepository" class="com.giantelectronicbrain.hadoop.hbase.WordRepository">
+	</beans:bean> -->
+
+	<!-- configuration to build a TEZ job using Cascading Spring support
+	Looks like Cascading Spring doesn't support hadoop 2.x! Will have to take a different approach -->
+<!-- <beans:bean id='flowDef' class='com.giantelectronicbrain.hadoop.cascading.tez.TezFlow' factory-method='createFlowDef' />
+ 	<cascading:cascading-flow id='wc' definition-ref='flowDef' />
+	<cascading:cascading-cascade id='cascade' flow-ref='wc' />
+	<cascading:cascading-runner unit-of-work-ref='cascade' run-at-startup='false'/>  -->
+	
+	
+	<!-- This is the basic hadoop and hbase MR configuration stuff -->
+	
+	<context:property-placeholder location="hadoop.properties"/>
+
+	<hbase-configuration delete-connection="false"/>
+	
+	<beans:bean id='htemplate' class='org.springframework.data.hadoop.hbase.HbaseTemplate'>
+		<beans:property name='configuration' ref='hbaseConfiguration'/>
+	</beans:bean>
+	
+	<configuration>
+	  fs.defaultFS=${hd.fs}
+	  yarn.resourcemanager.address=${hd.rm}
+	  mapreduce.framework.name=yarn
+	  mapreduce.jobhistory.address=${hd.jh}
+	</configuration>
+
+ 	<job id="wordcountJob"
+	     input-path="${wordcount.input.path}" 
+	     output-path="${wordcount.output.path}"
+         libs="file:///home/oracle/git/AIMS_infosys_code_share/hadoop_example_code/mapreduce-test/build/lib/*"
+	     jar="file:///home/oracle/git/AIMS_infosys_code_share/hadoop_example_code/mapreduce-test/build/libs/mapreduce-test-0.1-SNAPSHOT.jar"
+		 mapper="com.giantelectronicbrain.hadoop.mapreduce.HdfsFileMapper"
+		 reducer="com.giantelectronicbrain.hadoop.mapreduce.HdfsFileReducer"/>
+		 
+	<job id="hbaseWordcountJob"
+	     input-path="${wordcount.input.path}" 
+	     output-path="${extra.output.path}"
+	     libs="file:///home/oracle/git/AIMS_infosys_code_share/hadoop_example_code/mapreduce-test/build/lib/*"
+	     jar="file:///home/oracle/git/AIMS_infosys_code_share/hadoop_example_code/mapreduce-test/build/libs/mapreduce-test-0.1-SNAPSHOT.jar"
+		 mapper="com.giantelectronicbrain.hadoop.mapreduce.HdfsFileMapper"
+		 reducer="com.giantelectronicbrain.hadoop.hbase.HBaseWordReducer"/>
+		 
+	<job id="hiveWordcountJob"
+	     input-path="${wordcount.input.path}" 
+	     output-path="${extra.output.path}"
+	     libs="file:///home/oracle/git/AIMS_infosys_code_share/hadoop_example_code/mapreduce-test/build/lib/*"
+	     jar="file:///home/oracle/git/AIMS_infosys_code_share/hadoop_example_code/mapreduce-test/build/libs/mapreduce-test-0.1-SNAPSHOT.jar"
+		 mapper="com.giantelectronicbrain.hadoop.mapreduce.HdfsFileMapper"
+		 reducer="com.giantelectronicbrain.hadoop.hive.HiveWordReducer"/>
+
+	<job id="jpaWordcountJob"
+	     input-path="${wordcount.input.path}" 
+	     output-path="${extra.output.path}"
+	     libs="file:///home/oracle/git/AIMS_infosys_code_share/hadoop_example_code/mapreduce-test/build/lib/*"
+	     jar="file:///home/oracle/git/AIMS_infosys_code_share/hadoop_example_code/mapreduce-test/build/libs/mapreduce-test-0.1-SNAPSHOT.jar"
+		 mapper="com.giantelectronicbrain.hadoop.mapreduce.HdfsFileMapper"
+		 reducer="com.giantelectronicbrain.hadoop.springrepo.JpaWordReducer"/>
+		 
+	<script id="setupScript" location="copy-files.groovy">
+		<property name="localSourceFile" value="${localSourceFile}"/>
+		<property name="inputDir" value="${wordcount.input.path}"/>
+		<property name="outputDir" value="${wordcount.output.path}"/>
+		<property name="extraDir" value="${extra.output.path}"/>
+	</script>
+ 
+ 	<pig-factory exec-type='MAPREDUCE'/> 	
+ 	<pig-runner id='pigRunner'>
+ 		<script location="wordcount.pig">
+ 			<arguments>
+ 				inputfile=${piginput}
+ 				outputfile=${pigoutput}
+ 			</arguments>
+ 		</script>
+ 	</pig-runner>
+ 	
+ 	<!-- copy libraries to the location used by Tez to distribute jars -->
+ 	<script language='groovy' run-at-startup='true'>
+	 	if(!fsh.test('/user/tez/lib')) {
+	 		fsh.mkdir('/user/tez/lib');
+	 		fsh.copyFromLocal('./build/lib/*.jar','/user/tez/lib');
+	 	}
+ 	</script>
+ 	
+ 	<script language="groovy" id="catScript">
+ 		<property name="outputFile" value="${wordcount.output.path}/part-r-00000"/>
+ 		System.out.println("GOT HERE! Output file is "+outputFile);
+ 		System.out.println(fsh.cat(outputFile).toString());
+ 	</script>
+ 	
+	<job-runner id="runner" run-at-startup="false"
+			    job-ref="wordcountJob"
+ 			    />
+			    
+	<job-runner id="hbaseRunner" run-at-startup="false"
+			    job-ref="hbaseWordcountJob" />	  
+
+	<job-runner id="hiveRunner" run-at-startup="false"
+			    job-ref="hiveWordcountJob" />	  
+			    
+	<job-runner id="jpaRunner" run-at-startup="false"
+			    job-ref="jpaWordcountJob" />	  
+	
+</beans:beans>

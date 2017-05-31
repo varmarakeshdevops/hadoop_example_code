@@ -18,7 +18,8 @@ public class HBaseWordReducer extends WordReducerBase {
 	 */
 	public HBaseWordReducer() {
 		super();
-		wordRepository = context.getBean(HbaseWordRepository.class);
+		wordRepository = new HbaseWordRepository();
+				// context.getBean(HbaseWordRepository.class);
 	}
 
 }

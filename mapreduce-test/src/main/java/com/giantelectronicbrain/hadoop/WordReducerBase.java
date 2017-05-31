@@ -29,12 +29,12 @@ public abstract class WordReducerBase extends Reducer<Text, IntWritable, Text, I
 	protected IWordRepository wordRepository;
 	
 	protected WordReducerBase() {
-		setContext();
+//		setContext();
 	}
 	
-	protected void setContext() {
-		this.context = new ClassPathXmlApplicationContext("/META-INF/spring/application-context.xml",Driver.class);
-	}
+//	protected void setContext() {
+//		this.context = new ClassPathXmlApplicationContext("/META-INF/spring/application-context.xml",Driver.class);
+//	}
 
 	/**
 	 * Save the given key/value into using our WordRepository.

@@ -15,16 +15,25 @@
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
         classpath('io.spring.gradle:dependency-management-plugin:0.5.2.RELEASE')
     }
-   
+  	repositories {
+  	    maven {
+    		url 'https://repo.spring.io/libs-milestone'
+   		}
+    }
 }
 
-plugins {
-  id "com.github.johnrengelman.shadow" version "1.2.4"
-}
+//plugins {
+//  id "com.github.johnrengelman.shadow" version "1.2.4"
+//}
 
 // Apply the java-library plugin to add support for Java Library
 apply plugin: 'java-library'
-apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'maven'
+//apply plugin: 'com.github.johnrengelman.shadow'
+
+group = 'mapreduce-test'
+// artifactId is taken by default, from folder name
+version = '0.1-SNAPSHOT'
 
 javadoc {
  options.addStringOption('overview','src/main/java/com/giantelectronicbrain/hadoop/overview.html')
@@ -148,5 +157,6 @@ task copyToLib(type: Copy) {
 }
 
 test {
-	exclude '**/hive/WordRepositoryTest*'
+//	exclude '**/hive/WordRepositoryTest*'
+	exclude '**/*'
 }
